@@ -10,7 +10,9 @@
             "command": "guard",
             "movespeed": 0.005,
             "maxdistance": 50,
-            "searchRange": 40
+            "searchRange": 40,
+            "animation": "Walk",
+            "animationSpeed": 1.25
         },
         "file": "wolftaming:entities/land/dog-adult.json"
     }

@@ -34,7 +34,7 @@ namespace PetAI
                 commandName = taskConfig["command"].AsString("stay");
             }
 
-            //animMeta.Animation = "Walk";
+            animMeta.Animation = "Walk";
         }
 
         public override bool ShouldExecute()
@@ -76,7 +76,7 @@ namespace PetAI
             base.StartExecute();
 
             //animMeta.Animation = "Walk";
-            //entity.AnimManager.StartAnimation("Walk");
+            entity.AnimManager.StartAnimation("Walk");
             //entity.Controls.Forward = true;
 
             if (x != null && y != null && z != null)
