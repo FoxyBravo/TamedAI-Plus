@@ -230,6 +230,13 @@ namespace PetAI
                 TryReviveWith(itemslot);
                 return;
             }
+            if (entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal)
+            {
+                TryHealWoundedWith(itemslot);
+                handled = EnumHandling.Handled;
+                return;
+            }
             if (byEntity.Controls.Sneak) return;
 
             if (DomesticationLevel == DomesticationLevel.WILD
@@ -416,7 +423,9 @@ namespace PetAI
                 .ConvertAll(treat => (CollectibleObject)world.GetItem(treat) ?? world.GetBlock(treat))
                 .FindAll(treat => treat != null)
                 .ConvertAll(treat => new ItemStack(treat))];
-            if (entity.Alive && treats.Length > 0 && (string.IsNullOrEmpty(OwnerId) || player.PlayerUID == OwnerId))
+            bool isDowned = entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal;
+            if (entity.Alive && !isDowned && treats.Length > 0 && (string.IsNullOrEmpty(OwnerId) || player.PlayerUID == OwnerId) && Cooldown <= entity.World.Calendar.TotalHours)
             {
                 return [
                     new WorldInteraction()
@@ -451,11 +460,12 @@ namespace PetAI
         public override void OnEntityReceiveDamage(DamageSource damageSource, ref float damage)
         {
             var aggressor = damageSource.CauseEntity ?? damageSource.SourceEntity;
-            if (aggressor is EntityPlayer player
-                && (player.PlayerUID == OwnerId && !PetConfig.Current.PetDamageableByOwner
-                    || player.PlayerUID != OwnerId && !PetConfig.Current.PvpOn && DomesticationLevel != DomesticationLevel.WILD)
-                || damageSource.Source == EnumDamageSource.Fall
-                && PetConfig.Current.FalldamageOff)
+            if (damage > 0
+                && (aggressor is EntityPlayer player
+                    && (player.PlayerUID == OwnerId && !PetConfig.Current.PetDamageableByOwner
+                        || player.PlayerUID != OwnerId && !PetConfig.Current.PvpOn && DomesticationLevel != DomesticationLevel.WILD)
+                    || damageSource.Source == EnumDamageSource.Fall
+                    && PetConfig.Current.FalldamageOff))
             {
                 damage = 0;
                 damageSource.CauseEntity = null;
@@ -506,8 +516,9 @@ namespace PetAI
             if (entity.HasBehavior<EntityBehaviorHealth>())
             {
                 var beh = entity.GetBehavior<EntityBehaviorHealth>();
-                infotext.AppendLine(Lang.Get("Health: {0}/{1}", beh.Health, beh.MaxHealth));
+                infotext.AppendLine(Lang.Get("Health: {0}/{1}", Math.Round(beh.Health, 2), Math.Round(beh.MaxHealth, 2)));
             }
+
         }
 
         private void TryReviveWith(ItemSlot itemslot)
@@ -516,6 +527,26 @@ namespace PetAI
             if (isResurrector && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true)
             {
                 entity.Revive();
+                if (entity.HasBehavior<EntityBehaviorMortallyWoundable>())
+                {
+                    entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState = EnumEntityHealthState.Normal;
+                }
+                entity.AnimManager?.ActiveAnimationsByAnimCode.Keys.Foreach(entity.AnimManager.StopAnimation);
+                itemslot.TakeOut(1);
+                itemslot.MarkDirty();
+            }
+        }
+
+        private void TryHealWoundedWith(ItemSlot itemslot)
+        {
+            var isWoundHealer = PetConfig.Current.WoundHealers.Any(healer => healer.Split(":").Last() == itemslot?.Itemstack?.Collectible?.Code?.Path);
+            if (isWoundHealer && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true)
+            {
+                if (entity.HasBehavior<EntityBehaviorHealth>())
+                {
+                    var health = entity.GetBehavior<EntityBehaviorHealth>();
+                    health.Health = Math.Min(health.Health + health.MaxHealth * 0.4f, health.MaxHealth);
+                }
                 if (entity.HasBehavior<EntityBehaviorMortallyWoundable>())
                 {
                     entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState = EnumEntityHealthState.Normal;

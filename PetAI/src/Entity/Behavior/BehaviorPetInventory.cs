@@ -20,6 +20,10 @@ namespace PetAI
 
         public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled)
         {
+            if (byEntity.Controls.Sneak)
+            {
+                return;
+            }
             if (byEntity is EntityPlayer player && player.PlayerUID == entity.GetBehavior<EntityBehaviorTameable>()?.OwnerId)
             {
                 base.OnInteract(byEntity, itemslot, hitPosition, mode, ref handled);

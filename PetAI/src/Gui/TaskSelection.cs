@@ -4,6 +4,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
+
 namespace PetAI
 {
     public class TaskSelectionGui : GuiDialog
@@ -71,10 +72,35 @@ namespace PetAI
 
                 foreach (var command in availableCommands.FindAll(command => command.Type == type))
                 {
-                    SingleComposer.AddButton(Lang.Get(string.Format("petai:gui-command-{0}", command.CommandName.ToLower())), () => OnCommandClick(command), ElementBounds.Fixed(currentX, currentY, 135, 45));
+                    bool isActive = IsCommandActive(command);
+                    if (isActive)
+                    {
+                        SingleComposer.AddInset(ElementBounds.Fixed(currentX, currentY, 137, 47), 1, 3);
+                    }
+                    SingleComposer.AddButton(Lang.Get(string.Format("petai:gui-command-{0}", command.CommandName.ToLower())), () => OnCommandClick(command), ElementBounds.Fixed(currentX + (isActive ? 1 : 0), currentY + (isActive ? 1 : 0), 135, 45));
                     currentX += 150;
                 }
                 currentY += 50;
+            }
+        }
+
+        private bool IsCommandActive(Command command)
+        {
+            var behavior = targetEntity?.GetBehavior<EntityBehaviorReceiveCommand>();
+            if (behavior == null) return false;
+
+            switch (command.Type)
+            {
+                case EnumCommandType.COMPLEX:
+                    string active = behavior.ComplexCommand;
+                    if (command.CommandName == "roam" && string.IsNullOrEmpty(active)) return true;
+                    return active == command.CommandName;
+                case EnumCommandType.SIMPLE:
+                    return behavior.SimpleCommand == command.CommandName;
+                case EnumCommandType.AGGRESSIONLEVEL:
+                    return behavior.AggressionLevel.ToString().ToLower() == command.CommandName.ToLower();
+                default:
+                    return false;
             }
         }
 
@@ -91,6 +117,8 @@ namespace PetAI
                     .AddStaticText(Lang.Get("petai:gui-command-complex"), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, 100, 300, 20))
                     .AddButton(Lang.Get("petai:gui-command-followmaster"), () => OnCommandClick(new Command(EnumCommandType.COMPLEX, "followmaster")), ElementBounds.Fixed(0, 135, 135, 45))
                     .AddButton(Lang.Get("petai:gui-command-stay"), () => OnCommandClick(new Command(EnumCommandType.COMPLEX, "stay")), ElementBounds.Fixed(150, 135, 135, 45))
+                    .AddButton(Lang.Get("petai:gui-command-roam"), () => OnCommandClick(new Command(EnumCommandType.COMPLEX, "roam")), ElementBounds.Fixed(300, 135, 135, 45))
+                    .AddButton(Lang.Get("petai:gui-command-guard"), () => OnCommandClick(new Command(EnumCommandType.COMPLEX, "guard")), ElementBounds.Fixed(450, 135, 135, 45))
                     .AddStaticText(Lang.Get("petai:gui-command-aggressionlevel"), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, 185, 300, 20))
                     .AddButton(Lang.Get("petai:gui-command-neutral"), () => OnCommandClick(new Command(EnumCommandType.AGGRESSIONLEVEL, EnumAggressionLevel.NEUTRAL.ToString())), ElementBounds.Fixed(0, 220, 135, 45))
                     .AddButton(Lang.Get("petai:gui-command-protective"), () => OnCommandClick(new Command(EnumCommandType.AGGRESSIONLEVEL, EnumAggressionLevel.PROTECTIVE.ToString())), ElementBounds.Fixed(150, 220, 135, 45))
@@ -120,7 +148,7 @@ namespace PetAI
                 && command.CommandName != "dropgear"
                 && targetEntity.GetBehavior<EntityBehaviorReceiveCommand>().AvailableCommands[command] > targetEntity.GetBehavior<EntityBehaviorTameable>().Obedience)
             {
-                capi.ShowChatMessage(Lang.Get("petai:gui-pet-disobey", targetEntity.GetBehavior<EntityBehaviorReceiveCommand>().AvailableCommands[command] * 100));
+                capi.ShowChatMessage(Lang.Get("petai:gui-pet-disobey", Math.Round(targetEntity.GetBehavior<EntityBehaviorReceiveCommand>().AvailableCommands[command] * 100, 2)));
                 return true;
             }
 

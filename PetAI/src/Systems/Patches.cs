@@ -136,6 +136,30 @@ namespace PetAI
         }
     }
 
+    public class EntityBehaviorHealthGetInfoTextPatch
+    {
+        public static void Patch(Harmony harmony)
+        {
+            harmony.Patch(MethodInfo()
+                , prefix: new HarmonyMethod(typeof(EntityBehaviorHealthGetInfoTextPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+        }
+
+        public static void Unpatch(Harmony harmony)
+        {
+            harmony.Unpatch(MethodInfo()
+                , HarmonyPatchType.Prefix, "gerste.petai");
+        }
+
+        public static MethodInfo MethodInfo()
+        {
+            return typeof(EntityBehaviorHealth).GetMethod("GetInfoText", BindingFlags.Instance | BindingFlags.Public);
+        }
+        public static bool Prefix(EntityBehaviorHealth __instance)
+        {
+            return !__instance.entity.HasBehavior<EntityBehaviorTameable>();
+        }
+    }
+
     public class AiTaskStayCloseToEntityOnNoPathPatch
     {
 

@@ -24,6 +24,7 @@ namespace PetAI
             EntityBehaviorNameTagGetNamePatch.Patch(harmony);
             EntityBehaviorGrowBecomeAdultPatch.Patch(harmony);
             AiTaskStayCloseToEntityOnNoPathPatch.Patch(harmony);
+            EntityBehaviorHealthGetInfoTextPatch.Patch(harmony);
 
             api.RegisterEntityBehaviorClass("tameable", typeof(EntityBehaviorTameable));
             api.RegisterEntityBehaviorClass("petinventory", typeof(EntityBehaviorPetInventory));
@@ -39,6 +40,7 @@ namespace PetAI
             AiTaskRegistry.Register<AiTaskTrick>("simplecommand");
             AiTaskRegistry.Register<AiTaskFollowMaster>("followmaster");
             AiTaskRegistry.Register<AiTaskRestrictedRoam>("stay");
+            AiTaskRegistry.Register<AiTaskRestrictedRoam>("guard");
             AiTaskRegistry.Register<AiTaskPetMeleeAttack>("petmeleeattack");
             AiTaskRegistry.Register<AiTaskPetSeekEntity>("petseekentity");
             AiTaskRegistry.Register<AiTaskSeekNest>("seeknest");
@@ -98,6 +100,7 @@ namespace PetAI
             base.Dispose();
 
             MultiplyPatch.Unpatch(harmony);
+            EntityBehaviorHealthGetInfoTextPatch.Unpatch(harmony);
         }
 
         private void OnPetCommandMessage(IServerPlayer fromPlayer, PetCommandMessage networkMessage)
@@ -168,6 +171,7 @@ namespace PetAI
         public bool FalldamageOff = true;
         public bool AllowTeleport = false;
         public string[] Resurrectors = ["game:gear-temporal"];
+        public string[] WoundHealers = ["game:bandage-clean", "game:bandage-alcoholed", "game:poultice"];
     }
     public class Difficulty
     {
