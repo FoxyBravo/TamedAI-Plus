@@ -387,7 +387,18 @@ namespace PetAI
             }
             else
             {
-                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-not-ready", entity.GetName()), EnumChatType.Notification);
+                double remainingHours = Cooldown - entity.World.Calendar.TotalHours;
+                string message;
+                if (remainingHours < 1.0)
+                {
+                    message = Lang.Get("petai:message-not-ready-less-than-hour", entity.GetName());
+                }
+                else
+                {
+                    int hours = (int)Math.Round(remainingHours);
+                    message = Lang.Get("petai:message-not-ready-hours", entity.GetName(), hours);
+                }
+                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, message, EnumChatType.Notification);
             }
             return false;
         }

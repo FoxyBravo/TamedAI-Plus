@@ -96,6 +96,8 @@
 
     "message-tended-to": "Tended to {0}, current progress is {1}%.",
     "message-not-ready": "{0} is not ready to be tended to again.",
+    "message-not-ready-hours": "{0} can be tended to in about {1} hours.",
+    "message-not-ready-less-than-hour": "{0} can be tended to in less than an hour.",
     "message-startet-taming": "Successfully started taming {0}, current progress is {1}%.",
     "message-finished-taming": "Successfully tamed {0}.",
     "message-pet-dead": "Your pet {0} has died",
