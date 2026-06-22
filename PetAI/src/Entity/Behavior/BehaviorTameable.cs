@@ -254,7 +254,14 @@ namespace PetAI
             {
                 if (FeedEntityIfPossible(itemslot, player))
                 {
-                    (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-tended-to", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
+                    if (DomesticationProgress >= 1f)
+                    {
+                        (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-tamed", entity.GetName()), EnumChatType.Notification);
+                    }
+                    else
+                    {
+                        (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-tended-to", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
+                    }
                 }
                 if (DomesticationProgress >= 1f)
                 {
@@ -273,6 +280,7 @@ namespace PetAI
                 Obedience = 1;
                 OwnerId = (byEntity as EntityPlayer)?.PlayerUID;
                 SpawnTameVariant(1f);
+                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-tamed", entity.GetName()), EnumChatType.Notification);
             }
         }
         public override string PropertyName()
