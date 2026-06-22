@@ -38,7 +38,7 @@ namespace PetAI
 
             AiTaskRegistry.Register<AiTaskTrick>("simplecommand");
             AiTaskRegistry.Register<AiTaskFollowMaster>("followmaster");
-            AiTaskRegistry.Register<AiTaskStay>("stay");
+            AiTaskRegistry.Register<AiTaskRestrictedRoam>("stay");
             AiTaskRegistry.Register<AiTaskPetMeleeAttack>("petmeleeattack");
             AiTaskRegistry.Register<AiTaskPetSeekEntity>("petseekentity");
             AiTaskRegistry.Register<AiTaskSeekNest>("seeknest");

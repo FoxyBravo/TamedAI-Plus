@@ -5,7 +5,7 @@ using Vintagestory.GameContent;
 
 namespace PetAI
 {
-    public class AiTaskStay : AiTaskBase
+    public class AiTaskRestrictedRoam : AiTaskBase
     {
 
         double? x;
@@ -16,7 +16,7 @@ namespace PetAI
         bool stuck = false;
 
         readonly string commandName = "stay";
-        public AiTaskStay(EntityAgent entity, JsonObject taskConfig, JsonObject aiConfig) : base(entity, taskConfig, aiConfig)
+        public AiTaskRestrictedRoam(EntityAgent entity, JsonObject taskConfig, JsonObject aiConfig) : base(entity, taskConfig, aiConfig)
         {
 
             if (taskConfig["movespeed"] != null)
@@ -33,6 +33,8 @@ namespace PetAI
             {
                 commandName = taskConfig["command"].AsString("stay");
             }
+
+            //animMeta.Animation = "Walk";
         }
 
         public override bool ShouldExecute()
@@ -42,10 +44,11 @@ namespace PetAI
                 x = null;
                 y = null;
                 z = null;
-                ITreeAttribute stayloc = entity?.WatchedAttributes?.GetTreeAttribute("staylocation");
-                if (stayloc != null)
+                string attrKey = commandName + "location";
+                ITreeAttribute loc = entity?.WatchedAttributes?.GetTreeAttribute(attrKey);
+                if (loc != null)
                 {
-                    entity?.WatchedAttributes?.RemoveAttribute("staylocation");
+                    entity?.WatchedAttributes?.RemoveAttribute(attrKey);
                 }
                 return false;
             }
@@ -59,7 +62,7 @@ namespace PetAI
             }
             if (x == null || y == null || z == null)
             {
-                ITreeAttribute home = entity?.WatchedAttributes?.GetTreeAttribute("staylocation");
+                ITreeAttribute home = entity?.WatchedAttributes?.GetTreeAttribute(commandName + "location");
                 x = home?.TryGetDouble("x");
                 y = home?.TryGetDouble("y");
                 z = home?.TryGetDouble("z");
@@ -71,6 +74,10 @@ namespace PetAI
         public override void StartExecute()
         {
             base.StartExecute();
+
+            //animMeta.Animation = "Walk";
+            //entity.AnimManager.StartAnimation("Walk");
+            //entity.Controls.Forward = true;
 
             if (x != null && y != null && z != null)
             {
@@ -86,7 +93,7 @@ namespace PetAI
                 return false;
             }
 
-            
+            //entity.Controls.Forward = true;
 
             if (entity.Pos.SquareDistanceTo((double)x, (double)y, (double)z) < maxDistance * maxDistance / 4)
             {
