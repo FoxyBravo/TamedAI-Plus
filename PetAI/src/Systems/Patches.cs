@@ -184,4 +184,39 @@ namespace PetAI
             __instance.OnNoPath(null);
         }
     }
+
+    public class ItemDogToyDurabilityPatch
+    {
+
+        public static void Patch(Harmony harmony)
+        {
+            var method = MethodInfo();
+            if (method == null) return;
+            harmony.Patch(method,
+                prefix: new HarmonyMethod(typeof(ItemDogToyDurabilityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+        }
+
+        public static void Unpatch(Harmony harmony)
+        {
+            var method = MethodInfo();
+            if (method == null) return;
+            harmony.Unpatch(method, HarmonyPatchType.Prefix, "gerste.petai");
+        }
+
+        public static MethodInfo MethodInfo()
+        {
+            var type = AccessTools.TypeByName("WolfTaming.ItemDogToy")
+                    ?? AccessTools.TypeByName("Wolftaming.ItemDogToy")
+                    ?? AccessTools.TypeByName("wolftaming.ItemDogToy");
+            if (type == null) return null;
+            return type.GetMethod("OnHeldInteractStop", BindingFlags.Instance | BindingFlags.Public);
+        }
+
+        public static void Prefix(ItemSlot slot, EntityAgent byEntity)
+        {
+            if (slot?.Itemstack == null) return;
+            if (byEntity?.World == null) return;
+            slot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, slot, 1);
+        }
+    }
 }

@@ -25,6 +25,7 @@ namespace PetAI
             EntityBehaviorGrowBecomeAdultPatch.Patch(harmony);
             AiTaskStayCloseToEntityOnNoPathPatch.Patch(harmony);
             EntityBehaviorHealthGetInfoTextPatch.Patch(harmony);
+            ItemDogToyDurabilityPatch.Patch(harmony);
 
             api.RegisterEntityBehaviorClass("tameable", typeof(EntityBehaviorTameable));
             api.RegisterEntityBehaviorClass("petinventory", typeof(EntityBehaviorPetInventory));
@@ -102,6 +103,7 @@ namespace PetAI
 
             MultiplyPatch.Unpatch(harmony);
             EntityBehaviorHealthGetInfoTextPatch.Unpatch(harmony);
+            ItemDogToyDurabilityPatch.Unpatch(harmony);
         }
 
         private void OnPetCommandMessage(IServerPlayer fromPlayer, PetCommandMessage networkMessage)
