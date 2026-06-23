@@ -148,11 +148,17 @@ namespace PetAI
                 return;
             }
 
-            slot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, slot, 1);
-
+            // Take the bone out of the slot first, then damage the taken bone
+            // via a DummySlot so the remaining stack in the player's hand is
+            // untouched. Otherwise DamageItem would tick durability on the
+            // whole stack before TakeOut and the rest of the stack would
+            // lose a durability point too.
             ItemStack taken = slot.TakeOut(1);
             if (taken == null) return;
             slot.MarkDirty();
+
+            var dummySlot = new DummySlot(taken);
+            taken.Collectible.DamageItem(byEntity.World, byEntity, dummySlot, 1);
 
             Vec3f viewVec = byEntity.Pos.GetViewVector();
             Vec3d spawnPos = byEntity.Pos.XYZ
