@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
+using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
 namespace PetAI
@@ -36,9 +38,13 @@ namespace PetAI
         private const string AimingAttrKey = "petai:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
+        private const float PickupSqrDistance = 2.0f;
+
+        private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
 
         private ICoreAPI Api;
         private ChewingBoneCrosshair Crosshair;
+        private long tickListenerId;
 
         public BehaviorChewingBoneAimThrow(CollectibleObject collObj) : base(collObj) { }
 
@@ -52,6 +58,10 @@ namespace PetAI
                 Crosshair = new ChewingBoneCrosshair(capi);
                 capi.Event.RegisterRenderer(Crosshair, EnumRenderStage.Ortho);
             }
+            else if (api.Side == EnumAppSide.Server)
+            {
+                tickListenerId = api.World.RegisterGameTickListener(OnFetchTick, 100);
+            }
         }
 
         public override void OnUnloaded(ICoreAPI api)
@@ -61,6 +71,11 @@ namespace PetAI
                 (api as ICoreClientAPI)?.Event.UnregisterRenderer(Crosshair, EnumRenderStage.Ortho);
                 Crosshair.Dispose();
                 Crosshair = null;
+            }
+            if (tickListenerId != 0)
+            {
+                api.World.UnregisterGameTickListener(tickListenerId);
+                tickListenerId = 0;
             }
             base.OnUnloaded(api);
         }
@@ -165,6 +180,71 @@ namespace PetAI
         }
 
         /// <summary>
+        /// Server tick: for every dog we tagged in NotifyDogs, check if it has
+        /// reached the bone. If so, despawn the bone and hand the itemstack to
+        /// the nearest player (or drop it on the ground if no player is in
+        /// range). The wolftaming AiTaskPlayFetch then sees the bone is gone
+        /// and naturally transitions to its BringToy state, walking the dog
+        /// back to the player.
+        ///
+        /// This works around the fact that AiTaskPlayFetch.GetToy()'s built-in
+        /// pickup (via LeftHandItemSlot) silently fails for the dogtoy item
+        /// in the current configuration, which would otherwise leave the dog
+        /// walking back empty.
+        /// </summary>
+        private void OnFetchTick(float dt)
+        {
+            if (Api?.World == null) return;
+
+            var keys = dogToyPairs.Keys.ToList();
+            foreach (var dogId in keys)
+            {
+                if (!dogToyPairs.TryGetValue(dogId, out var dogToy) || dogToy == null)
+                {
+                    dogToyPairs.Remove(dogId);
+                    continue;
+                }
+                if (!dogToy.Alive || dogToy.ShouldDespawn)
+                {
+                    dogToyPairs.Remove(dogId);
+                    continue;
+                }
+
+                var dog = Api.World.GetEntityById(dogId);
+                if (dog == null || !dog.Alive)
+                {
+                    dogToyPairs.Remove(dogId);
+                    continue;
+                }
+
+                if (dog.Pos.SquareDistanceTo(dogToy.Pos) >= PickupSqrDistance) continue;
+
+                // Despawn the bone first, then route the itemstack to a player
+                // (or drop it) so the dog returns carrying nothing visible but
+                // the player still gets their bone back.
+                ItemStack stack = dogToy.Itemstack;
+                dogToy.Die(EnumDespawnReason.PickedUp);
+                dogToyPairs.Remove(dogId);
+
+                if (stack == null) continue;
+
+                var nearest = Api.World.GetNearestEntity(dog.Pos.XYZ, 50, 10, e => e is EntityPlayer) as EntityPlayer;
+                if (nearest != null)
+                {
+                    var serverPlayer = nearest.World.PlayerByUid(nearest.PlayerUID) as IServerPlayer;
+                    if (serverPlayer != null)
+                    {
+                        serverPlayer.InventoryManager.TryGiveItemstack(stack);
+                        continue;
+                    }
+                }
+
+                // No reachable player — drop the bone on the ground at the dog.
+                Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
+            }
+        }
+
+        /// <summary>
         /// Find nearby entities with an AiTaskPlayFetch task and point them at the
         /// freshly thrown bone. AiTaskPlayFetch lives in the WolfTaming assembly,
         /// which petai does not reference, so we look it up via reflection and
@@ -210,6 +290,7 @@ namespace PetAI
                 if (task != null)
                 {
                     dogToyProp.SetValue(task, dogToy);
+                    dogToyPairs[dog.EntityId] = dogToy;
                 }
             }
         }
