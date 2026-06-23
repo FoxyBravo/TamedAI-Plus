@@ -248,7 +248,7 @@ namespace PetAI
                     // Random drop distance per fetch: 1.5 (holds on, drops right
                     // at the player) to 5.0 (lets go early, drops a bit short).
                     // Stays consistent for the whole return trip of this fetch.
-                    float dropDistance = 1.5f + (float)Api.World.Rand.NextDouble() * 3.5f;
+                    float dropDistance = 1.5f + (float)Api.World.Rand.NextDouble() * 1.0f;
                     dogDropSqrDistance[dogId] = dropDistance * dropDistance;
                 }
                 else
