@@ -27,12 +27,11 @@ namespace PetAI
 
             slot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, slot, 1);
 
-            float yaw = byEntity.Pos.Yaw + GameMath.PI;
-            double dirX = Math.Sin(yaw);
-            double dirZ = Math.Cos(yaw);
+            double dirX = Math.Sin(byEntity.Pos.Yaw);
+            double dirZ = Math.Cos(byEntity.Pos.Yaw);
             Vec3d spawnPos = byEntity.Pos.XYZ
                 .Add(0, byEntity.LocalEyePos.Y, 0)
-                .Add(dirX * 2, 0.2, dirZ * 2);
+                .Add(dirX * 3, 0.2, dirZ * 3);
 
             ItemStack taken = slot.TakeOut(1);
             if (taken == null) return;
