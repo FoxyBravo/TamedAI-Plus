@@ -39,7 +39,7 @@ namespace PetAI
 
         private const float SpawnForwardOffset = 0.5f;
         private const float PickupSqrDistance = 2.0f;
-        private const float DropSqrDistance = 4.0f; // 2 blocks squared
+        private const float DropSqrDistance = 1.0f; // 1 block — bone lands at the player's feet
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
         private static readonly Dictionary<long, ItemStack> dogCarriedToy = new Dictionary<long, ItemStack>();
