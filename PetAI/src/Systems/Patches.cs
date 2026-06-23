@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using HarmonyLib;
 using Vintagestory.API.Common;
@@ -190,15 +191,31 @@ namespace PetAI
 
         public static void Patch(Harmony harmony, ICoreAPI api)
         {
-            var method = MethodInfo();
+            MethodInfo method;
+            try
+            {
+                method = MethodInfo();
+            }
+            catch (Exception ex)
+            {
+                api.Logger.Warning("petai: could not resolve ItemDogToy.OnHeldInteractStart ({0}); chewing bone will not lose durability on throw", ex.Message);
+                return;
+            }
             if (method == null)
             {
                 api.Logger.Warning("petai: could not resolve ItemDogToy.OnHeldInteractStart; chewing bone will not lose durability on throw");
                 return;
             }
             api.Logger.Notification("petai: chewing bone durability patch applied to {0}.{1}", method.DeclaringType.FullName, method.Name);
-            harmony.Patch(method,
-                prefix: new HarmonyMethod(typeof(ItemDogToyDurabilityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+            try
+            {
+                harmony.Patch(method,
+                    prefix: new HarmonyMethod(typeof(ItemDogToyDurabilityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+            }
+            catch (Exception ex)
+            {
+                api.Logger.Error("petai: failed to apply chewing bone durability patch: {0}", ex.Message);
+            }
         }
 
         public static void Unpatch(Harmony harmony)
@@ -217,11 +234,11 @@ namespace PetAI
             return type.GetMethod("OnHeldInteractStart", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public static void Prefix(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handHandling, ref EnumHandling handling)
+        public static void Prefix(ItemSlot itemslot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
         {
-            if (slot?.Itemstack == null) return;
+            if (itemslot?.Itemstack == null) return;
             if (byEntity?.World == null) return;
-            slot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, slot, 1);
+            itemslot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, itemslot, 1);
         }
     }
 }
