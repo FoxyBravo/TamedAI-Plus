@@ -42,6 +42,7 @@ namespace PetAI
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
         private static readonly Dictionary<long, ItemStack> dogCarriedToy = new Dictionary<long, ItemStack>();
+        private static readonly Dictionary<long, float> dogDropSqrDistance = new Dictionary<long, float>();
 
         private ICoreAPI Api;
         private ChewingBoneCrosshair Crosshair;
@@ -237,6 +238,12 @@ namespace PetAI
                 if (dog is EntityAgent agent && TryCarryInMouth(agent, stack))
                 {
                     dogCarriedToy[dogId] = stack;
+
+                    // Random drop distance per fetch: 1.5 (holds on, drops right
+                    // at the player) to 5.0 (lets go early, drops a bit short).
+                    // Stays consistent for the whole return trip of this fetch.
+                    float dropDistance = 1.5f + (float)Api.World.Rand.NextDouble() * 3.5f;
+                    dogDropSqrDistance[dogId] = dropDistance * dropDistance;
                 }
                 else
                 {
@@ -260,15 +267,20 @@ namespace PetAI
                     // Dog died while carrying — drop the bone where it fell.
                     if (dog != null) Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
                     dogCarriedToy.Remove(dogId);
+                    dogDropSqrDistance.Remove(dogId);
                     continue;
                 }
 
                 var player = Api.World.GetNearestEntity(dog.Pos.XYZ, 3, 3, e => e is EntityPlayer);
                 if (player == null) continue;
 
+                float dropSqr = dogDropSqrDistance.TryGetValue(dogId, out float v) ? v : 9f;
+                if (dog.Pos.SquareDistanceTo(player.Pos) > dropSqr) continue;
+
                 if (dog is EntityAgent agent) ClearMouth(agent);
                 Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
                 dogCarriedToy.Remove(dogId);
+                dogDropSqrDistance.Remove(dogId);
             }
         }
 
