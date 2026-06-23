@@ -232,12 +232,12 @@ namespace PetAI
                     ?? AccessTools.TypeByName("Wolftaming.ItemDogToy")
                     ?? AccessTools.TypeByName("wolftaming.ItemDogToy");
             if (type == null) return null;
-            return type.GetMethod("OnHeldInteractStart", BindingFlags.Instance | BindingFlags.Public);
+            return type.GetMethod("OnHeldInteractStop", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public static void Prefix(ItemSlot itemslot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handling)
+        public static void Prefix(float secondsUsed, ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel)
         {
-            if (itemslot?.Itemstack == null) return;
+            if (slot?.Itemstack == null) return;
             if (byEntity?.World == null) return;
 
             long now = byEntity.World.ElapsedMilliseconds;
@@ -247,19 +247,19 @@ namespace PetAI
             }
             lastDecrementMs = now;
 
-            int max = itemslot.Itemstack.Collectible.Durability;
-            int dur = itemslot.Itemstack.Attributes.GetInt("durability");
+            int max = slot.Itemstack.Collectible.Durability;
+            int dur = slot.Itemstack.Attributes.GetInt("durability");
             int newDur = dur + 1;
 
             if (newDur >= max)
             {
-                itemslot.Itemstack = null;
+                slot.Itemstack = null;
             }
             else
             {
-                itemslot.Itemstack.Attributes.SetInt("durability", newDur);
+                slot.Itemstack.Attributes.SetInt("durability", newDur);
             }
-            itemslot.MarkDirty();
+            slot.MarkDirty();
         }
     }
 }
