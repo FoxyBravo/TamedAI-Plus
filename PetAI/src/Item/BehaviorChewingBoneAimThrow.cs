@@ -143,8 +143,8 @@ namespace PetAI
                     (double)viewVec.Z * SpawnForwardOffset
                 );
 
-            float charge = GameMath.Clamp(0.5f + secondsUsed * 0.5f, 0.5f, 1.2f);
-            float speed = 1.5f * charge;
+            float charge = GameMath.Clamp(0.4f + secondsUsed * 0.3f, 0.4f, 0.7f);
+            float speed = 0.55f * charge;
             Vec3d velocity = new Vec3d(
                 (double)viewVec.X * speed,
                 (double)viewVec.Y * speed,
