@@ -33,7 +33,7 @@ namespace PetAI
             api.RegisterEntityBehaviorClass("pettableextended", typeof(EntityBehaviorPettableExtended));
 
             api.RegisterCollectibleBehaviorClass("considerpetfood", typeof(BehaviorConsiderHumanFoodForPetsToo));
-            api.RegisterCollectibleBehaviorClass("PetAIDogToyThrow", typeof(BehaviorDogToyThrow));
+            api.RegisterCollectibleBehaviorClass("PetAIChewingBoneAimThrow", typeof(BehaviorChewingBoneAimThrow));
 
             api.RegisterBlockEntityClass("PetNest", typeof(BlockEntityPetNest));
             api.RegisterBlockClass("PetNest", typeof(BlockPetNest));
