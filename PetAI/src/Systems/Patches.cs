@@ -193,7 +193,7 @@ namespace PetAI
             var method = MethodInfo();
             if (method == null)
             {
-                api.Logger.Warning("petai: could not resolve ItemDogToy.OnHeldInteractStop; chewing bone will not lose durability on throw");
+                api.Logger.Warning("petai: could not resolve ItemDogToy.OnHeldInteractStart; chewing bone will not lose durability on throw");
                 return;
             }
             api.Logger.Notification("petai: chewing bone durability patch applied to {0}.{1}", method.DeclaringType.FullName, method.Name);
@@ -214,10 +214,10 @@ namespace PetAI
                     ?? AccessTools.TypeByName("Wolftaming.ItemDogToy")
                     ?? AccessTools.TypeByName("wolftaming.ItemDogToy");
             if (type == null) return null;
-            return type.GetMethod("OnHeldInteractStop", BindingFlags.Instance | BindingFlags.Public);
+            return type.GetMethod("OnHeldInteractStart", BindingFlags.Instance | BindingFlags.Public);
         }
 
-        public static void Prefix(ItemSlot slot, EntityAgent byEntity)
+        public static void Prefix(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handHandling, ref EnumHandling handling)
         {
             if (slot?.Itemstack == null) return;
             if (byEntity?.World == null) return;
