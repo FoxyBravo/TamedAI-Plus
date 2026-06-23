@@ -21,12 +21,9 @@ namespace PetAI
 
         public override void OnHeldInteractStart(ItemSlot slot, EntityAgent byEntity, BlockSelection blockSel, EntitySelection entitySel, bool firstEvent, ref EnumHandHandling handHandling, ref EnumHandling handling)
         {
+            byEntity.World.Api.Logger.Notification("petai: BehaviorDogToyThrow.OnHeldInteractStart fired, firstEvent={0}, entitySel={1}, blockSel={2}, item={3}", firstEvent, entitySel?.Entity?.Code, blockSel?.Position, slot?.Itemstack?.Item?.Code);
             if (!firstEvent) return;
             if (slot?.Itemstack == null || byEntity?.World == null) return;
-            if (entitySel?.Entity == null) return;
-
-            var tameable = entitySel.Entity.GetBehavior<EntityBehaviorTameable>();
-            if (tameable == null) return;
 
             slot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, slot, 1);
 
