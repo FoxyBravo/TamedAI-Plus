@@ -188,6 +188,7 @@ namespace PetAI
 
     public class ItemDogToyDurabilityPatch
     {
+        private static long lastDecrementMs = 0;
 
         public static void Patch(Harmony harmony, ICoreAPI api)
         {
@@ -238,11 +239,27 @@ namespace PetAI
         {
             if (itemslot?.Itemstack == null) return;
             if (byEntity?.World == null) return;
-            int before = itemslot.Itemstack.Attributes.GetInt("durability");
+
+            long now = byEntity.World.ElapsedMilliseconds;
+            if (now - lastDecrementMs < 100)
+            {
+                return;
+            }
+            lastDecrementMs = now;
+
             int max = itemslot.Itemstack.Collectible.Durability;
-            itemslot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, itemslot, 1);
-            int after = itemslot.Itemstack.Attributes.GetInt("durability");
-            byEntity.World.Api.Logger.Notification("petai: dogtoy throw damage: before={0}/{1}, after={2}/{3}, itemCode={4}", before, max, after, max, itemslot.Itemstack.Item?.Code);
+            int dur = itemslot.Itemstack.Attributes.GetInt("durability");
+            int newDur = dur + 1;
+
+            if (newDur >= max)
+            {
+                itemslot.Itemstack = null;
+            }
+            else
+            {
+                itemslot.Itemstack.Attributes.SetInt("durability", newDur);
+            }
+            itemslot.MarkDirty();
         }
     }
 }
