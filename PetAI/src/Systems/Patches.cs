@@ -238,7 +238,11 @@ namespace PetAI
         {
             if (itemslot?.Itemstack == null) return;
             if (byEntity?.World == null) return;
+            int before = itemslot.Itemstack.Attributes.GetInt("durability");
+            int max = itemslot.Itemstack.Collectible.Durability;
             itemslot.Itemstack.Collectible.DamageItem(byEntity.World, byEntity, itemslot, 1);
+            int after = itemslot.Itemstack.Attributes.GetInt("durability");
+            byEntity.World.Api.Logger.Notification("petai: dogtoy throw damage: before={0}/{1}, after={2}/{3}, itemCode={4}", before, max, after, max, itemslot.Itemstack.Item?.Code);
         }
     }
 }
