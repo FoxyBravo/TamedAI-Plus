@@ -1,9 +1,7 @@
-using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
-using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
 namespace PetAI
@@ -13,7 +11,7 @@ namespace PetAI
         public override string ToggleKeyCombinationCode => null;
 
         readonly private long targetEntityId;
-        readonly private int currentY = 20;
+        private int currentY = 20;
 
         string petName;
 
@@ -34,9 +32,9 @@ namespace PetAI
                 .AddShadedDialogBG(bgBounds)
                 .AddDialogTitleBar(Lang.Get("petai:gui-profile-title"), () => TryClose())
                 .BeginChildElements(bgBounds);
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-name"), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, currentY, 200, 20));
-            currentY += 35;
-            SingleComposer.AddTextInput(ElementBounds.Fixed(0, currentY, 200, 40), (name) =>
+            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-name"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+            currentY += 23;
+            SingleComposer.AddTextInput(ElementBounds.Fixed(0, currentY, 200, 35), (name) =>
             {
                 if (!string.IsNullOrEmpty(name) && name.Length > 50)
                 {
@@ -46,45 +44,26 @@ namespace PetAI
                 petName = name;
             }, null, "petName");
             SingleComposer.GetTextInput("petName").SetValue(targetEntity?.GetBehavior<EntityBehaviorNameTag>()?.DisplayName);
-            currentY += 50;
-            GetHealthSat(out float? health, out float? maxhealth, targetEntity);
-            if (health != null && maxhealth != null)
-            {
-                SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-currenthealth", health, maxhealth), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, currentY, 240, 20));
-                currentY += 50;
-            }
+            currentY += 40;
+            int generation = targetEntity != null ? targetEntity.WatchedAttributes.GetInt("generation", 0) : 0;
+            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
+            currentY += 40;
             if (targetEntity?.HasBehavior<EntityBehaviorMultiply>() == true)
             {
                 var multiply = targetEntity.GetBehavior<EntityBehaviorTameable>().MultiplyAllowed;
                 multiplyAllowed = multiply;
-                SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-multiply"), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, currentY, 200, 20));
-                SingleComposer.AddSwitch(value => multiplyAllowed = value, ElementBounds.Fixed(150, currentY, 200, 20), "multiplyAllowed");
+                SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-multiply"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+                SingleComposer.AddSwitch(value => multiplyAllowed = value, ElementBounds.Fixed(150, currentY, 200, 18), "multiplyAllowed");
                 SingleComposer.GetSwitch("multiplyAllowed").SetValue(multiply);
-                currentY += 50;
+                currentY += 40;
             }
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-abandon"), CairoFont.WhiteSmallishText(), ElementBounds.Fixed(0, currentY, 200, 20));
-            SingleComposer.AddSwitch(value => abandon = value, ElementBounds.Fixed(150, currentY, 200, 20), "abandon");
-            currentY += 50;
-            SingleComposer.AddButton(Lang.Get("petai:gui-profile-ok"), () => OnClick(), ElementBounds.Fixed(0, currentY, 90, 40))
-                .AddButton(Lang.Get("petai:gui-profile-cancel"), () => TryClose(), ElementBounds.Fixed(150, currentY, 90, 40))
+            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-abandon"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+            SingleComposer.AddSwitch(value => abandon = value, ElementBounds.Fixed(150, currentY, 200, 18), "abandon");
+            currentY += 40;
+            SingleComposer.AddButton(Lang.Get("petai:gui-profile-ok"), () => OnClick(), ElementBounds.Fixed(0, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
+                .AddButton(Lang.Get("petai:gui-profile-cancel"), () => TryClose(), ElementBounds.Fixed(120, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
                 .EndChildElements()
                 .Compose();
-        }
-
-        void GetHealthSat(out float? health, out float? maxHealth, Entity targetEntity)
-        {
-            health = null;
-            maxHealth = null;
-
-            ITreeAttribute healthTree = targetEntity?.WatchedAttributes.GetTreeAttribute("health");
-            if (healthTree != null)
-            {
-                health = healthTree.TryGetFloat("currenthealth");
-                maxHealth = healthTree.TryGetFloat("maxhealth");
-            }
-
-            if (health != null) health = (float)Math.Round((float)health, 1);
-            if (maxHealth != null) maxHealth = (float)Math.Round((float)maxHealth, 1);
         }
         private bool OnClick()
         {

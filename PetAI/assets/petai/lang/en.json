@@ -114,7 +114,7 @@
 
     "gui-profile-title": "Pet Profile",
     "gui-profile-name": "Name:",
-    "gui-profile-currenthealth": "Current health: {0}/{1}",
+    "gui-profile-generation": "Current generation: {0}",
     "gui-profile-multiply": "Pet reproduces:",
     "gui-profile-abandon": "Abandon pet:",
     "gui-profile-ok": "OK",
