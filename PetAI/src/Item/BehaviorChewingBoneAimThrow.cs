@@ -235,7 +235,13 @@ namespace PetAI
 
                 if (stack == null) continue;
 
-                if (dog is EntityAgent agent && TryCarryInMouth(agent, stack))
+                bool carried = false;
+                if (dog is EntityAgent agent)
+                {
+                    carried = TryCarryInMouth(agent, stack) || HasItemInHand(agent, stack);
+                }
+
+                if (carried)
                 {
                     dogCarriedToy[dogId] = stack;
 
@@ -305,6 +311,23 @@ namespace PetAI
                 right.MarkDirty();
                 return true;
             }
+            return false;
+        }
+
+        /// <summary>
+        /// Check whether the dog already has the given stack in either hand
+        /// slot. Used to detect when the wolftaming AiTaskPlayFetch's own
+        /// pickup won the race against our TryCarryInMouth, so we can still
+        /// track the bone for the drop phase instead of giving it to the
+        /// player as a fallback.
+        /// </summary>
+        private bool HasItemInHand(EntityAgent dog, ItemStack stack)
+        {
+            if (stack == null) return false;
+            var left = dog.LeftHandItemSlot;
+            if (left?.Itemstack != null && stack.Equals(Api.World, left.Itemstack)) return true;
+            var right = dog.RightHandItemSlot;
+            if (right?.Itemstack != null && stack.Equals(Api.World, right.Itemstack)) return true;
             return false;
         }
 
