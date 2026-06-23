@@ -35,6 +35,7 @@ namespace PetAI
         private const float SpawnForwardOffset = 0.5f;
 
         private ICoreAPI Api;
+        private ChewingBoneCrosshair Crosshair;
 
         public BehaviorChewingBoneAimThrow(CollectibleObject collObj) : base(collObj) { }
 
@@ -42,6 +43,23 @@ namespace PetAI
         {
             base.OnLoaded(api);
             Api = api;
+
+            if (api is ICoreClientAPI capi)
+            {
+                Crosshair = new ChewingBoneCrosshair(capi);
+                capi.Event.RegisterRenderer(Crosshair, EnumRenderStage.Ortho);
+            }
+        }
+
+        public override void OnUnloaded(ICoreAPI api)
+        {
+            if (Crosshair != null)
+            {
+                (api as ICoreClientAPI)?.Event.UnregisterRenderer(Crosshair, EnumRenderStage.Ortho);
+                Crosshair.Dispose();
+                Crosshair = null;
+            }
+            base.OnUnloaded(api);
         }
 
         public override void OnHeldInteractStart(
@@ -57,6 +75,8 @@ namespace PetAI
 
             byEntity.Controls.Sprint = false;
             byEntity.ServerControls.Sprint = false;
+
+            byEntity.StartAnimation("aim");
 
             handHandling = EnumHandHandling.PreventDefault;
             handling = EnumHandling.PreventDefault;
@@ -81,6 +101,7 @@ namespace PetAI
             if (byEntity?.World == null) return true;
 
             byEntity.Attributes.SetInt(AimingAttrKey, 0);
+            byEntity.StopAnimation("aim");
 
             handled = EnumHandling.PreventDefault;
             return true;
@@ -99,6 +120,7 @@ namespace PetAI
             }
 
             byEntity.Attributes.SetInt(AimingAttrKey, 0);
+            byEntity.StopAnimation("aim");
 
             if (byEntity.World.Side == EnumAppSide.Client)
             {
