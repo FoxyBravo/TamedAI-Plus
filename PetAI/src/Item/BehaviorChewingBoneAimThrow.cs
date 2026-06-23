@@ -43,6 +43,10 @@ namespace PetAI
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
         private static readonly Dictionary<long, ItemStack> dogCarriedToy = new Dictionary<long, ItemStack>();
+        private static readonly Dictionary<long, int> dogRetryAttempts = new Dictionary<long, int>();
+
+        private const int MaxRetryAttempts = 3;
+        private const float RetryOffsetDistance = 2.5f;
 
         private ICoreAPI Api;
         private ChewingBoneCrosshair Crosshair;
@@ -250,10 +254,41 @@ namespace PetAI
                 if (carried)
                 {
                     dogCarriedToy[dogId] = stack;
+                    dogRetryAttempts.Remove(dogId);
                 }
                 else
                 {
-                    GiveToNearestPlayer(dog, stack);
+                    int attempts = dogRetryAttempts.TryGetValue(dogId, out int a) ? a : 0;
+
+                    if (attempts < MaxRetryAttempts)
+                    {
+                        // Pickup failed (likely a hitbox issue — smaller dogs
+                        // can pass over the bone, bigger ones can't reach it).
+                        // Re-spawn the bone at a random offset around the dog
+                        // and re-trigger the fetch. The dog will walk to the
+                        // new bone position, effectively "running around it"
+                        // and trying again.
+                        dogRetryAttempts[dogId] = attempts + 1;
+
+                        float angle = (float)(Api.World.Rand.NextDouble() * Math.PI * 2);
+                        double ox = Math.Cos(angle) * RetryOffsetDistance;
+                        double oz = Math.Sin(angle) * RetryOffsetDistance;
+                        Vec3d newPos = dog.Pos.XYZ.Add(ox, 0, oz);
+
+                        EntityItem newBone = Api.World.SpawnItemEntity(stack, newPos) as EntityItem;
+                        if (newBone != null)
+                        {
+                            // Re-run NotifyDogs so the wolftaming fetch task
+                            // picks up the new bone and the dog walks to it.
+                            NotifyDogs(newBone);
+                        }
+                    }
+                    else
+                    {
+                        // Out of retries — give the bone to the player.
+                        dogRetryAttempts.Remove(dogId);
+                        GiveToNearestPlayer(dog, stack);
+                    }
                 }
             }
 
