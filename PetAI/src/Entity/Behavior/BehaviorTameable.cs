@@ -490,6 +490,11 @@ namespace PetAI
                 damageSource.CauseEntity = null;
                 damageSource.SourceEntity = null;
             }
+            if (aggressor != null && aggressor.EntityId != entity.EntityId)
+            {
+                entity.WatchedAttributes.SetInt("petai:lastDamagerId", (int)aggressor.EntityId);
+                entity.WatchedAttributes.SetInt("petai:lastDamageMs", (int)(entity.World.ElapsedMilliseconds % int.MaxValue));
+            }
             var behaviorHealth = entity.GetBehavior<EntityBehaviorHealth>();
             if (behaviorHealth?.Health < 0)
             {
