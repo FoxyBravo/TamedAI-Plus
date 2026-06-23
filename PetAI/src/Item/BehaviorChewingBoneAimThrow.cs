@@ -38,7 +38,7 @@ namespace PetAI
         private const string AimingAttrKey = "petai:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
-        private const float PickupSqrDistance = 4.0f; // 2 blocks — forgiving so the dog can still pick up after a slow pathfinding approach
+        private const float PickupSqrDistance = 2.0f;
         private const float DropSqrDistance = 4.0f; // 2 blocks squared
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
@@ -233,17 +233,7 @@ namespace PetAI
                     continue;
                 }
 
-                bool inRange = dog.Pos.SquareDistanceTo(dogToy.Pos) < PickupSqrDistance;
-
-                // The wolftaming task's own GetToy() can fire first, fail to put
-                // the bone in LeftHandItemSlot, set its DogToy to null and
-                // switch to BringToy() — the dog then walks back empty while
-                // the bone is still lying on the ground. Catch that case:
-                // if the task has given up on the bone, despawn it anyway
-                // so the player still gets it back.
-                bool wolftamingGaveUp = IsWolftamingFetchTaskDone(dog, dogToy);
-
-                if (!inRange && !wolftamingGaveUp) continue;
+                if (dog.Pos.SquareDistanceTo(dogToy.Pos) >= PickupSqrDistance) continue;
 
                 ItemStack stack = dogToy.Itemstack;
                 dogToy.Die(EnumDespawnReason.PickedUp);
@@ -336,46 +326,6 @@ namespace PetAI
             var right = dog.RightHandItemSlot;
             if (right?.Itemstack != null && stack.Equals(Api.World, right.Itemstack)) return true;
             return false;
-        }
-
-        /// <summary>
-        /// Check whether the wolftaming AiTaskPlayFetch task on the given dog
-        /// has already given up on this bone (its DogToy property is null
-        /// or points at a different entity, or the task itself is no longer
-        /// active). When that's true, the dog is about to walk back empty;
-        /// we despawn the bone ourselves so the player still gets it.
-        /// </summary>
-        private bool IsWolftamingFetchTaskDone(Entity dog, EntityItem dogToy)
-        {
-            if (dog == null || dogToy == null) return false;
-
-            Type playFetchType = null;
-            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var t = asm.GetType("WolfTaming.AiTaskPlayFetch");
-                if (t != null) { playFetchType = t; break; }
-            }
-            if (playFetchType == null) return false;
-
-            PropertyInfo dogToyProp = playFetchType.GetProperty("DogToy");
-            if (dogToyProp == null) return false;
-
-            var taskAi = dog.GetBehavior<EntityBehaviorTaskAI>();
-            if (taskAi == null) return false;
-            var taskManager = taskAi.TaskManager;
-            if (taskManager == null) return false;
-
-            var getTask = taskManager.GetType()
-                .GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .FirstOrDefault(m => m.Name == "GetTask" && m.IsGenericMethodDefinition && m.GetParameters().Length == 0)
-                ?.MakeGenericMethod(playFetchType);
-            if (getTask == null) return false;
-
-            var task = getTask.Invoke(taskManager, null);
-            if (task == null) return true; // task not present anymore
-
-            var current = dogToyProp.GetValue(task) as EntityItem;
-            return current != dogToy; // task points at something else (or nothing)
         }
 
         private void ClearMouth(EntityAgent dog)
