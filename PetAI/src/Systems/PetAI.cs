@@ -25,6 +25,7 @@ namespace PetAI
             EntityBehaviorGrowBecomeAdultPatch.Patch(harmony);
             AiTaskStayCloseToEntityOnNoPathPatch.Patch(harmony);
             EntityBehaviorHealthGetInfoTextPatch.Patch(harmony);
+            ItemDogToyDurabilityPatch.Patch(harmony, api);
 
             api.RegisterEntityBehaviorClass("tameable", typeof(EntityBehaviorTameable));
             api.RegisterEntityBehaviorClass("petinventory", typeof(EntityBehaviorPetInventory));
@@ -33,7 +34,6 @@ namespace PetAI
             api.RegisterEntityBehaviorClass("pettableextended", typeof(EntityBehaviorPettableExtended));
 
             api.RegisterCollectibleBehaviorClass("considerpetfood", typeof(BehaviorConsiderHumanFoodForPetsToo));
-            api.RegisterCollectibleBehaviorClass("durabilityonthrow", typeof(BehaviorDurabilityOnThrow));
 
             api.RegisterBlockEntityClass("PetNest", typeof(BlockEntityPetNest));
             api.RegisterBlockClass("PetNest", typeof(BlockPetNest));
@@ -103,6 +103,7 @@ namespace PetAI
 
             MultiplyPatch.Unpatch(harmony);
             EntityBehaviorHealthGetInfoTextPatch.Unpatch(harmony);
+            ItemDogToyDurabilityPatch.Unpatch(harmony);
         }
 
         private void OnPetCommandMessage(IServerPlayer fromPlayer, PetCommandMessage networkMessage)
