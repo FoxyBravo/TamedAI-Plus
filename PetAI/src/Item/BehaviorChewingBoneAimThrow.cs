@@ -41,6 +41,7 @@ namespace PetAI
         private const float PickupSqrDistance = 2.0f;
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
+        private static readonly Dictionary<long, ItemStack> dogCarriedToy = new Dictionary<long, ItemStack>();
 
         private ICoreAPI Api;
         private ChewingBoneCrosshair Crosshair;
@@ -180,22 +181,30 @@ namespace PetAI
         }
 
         /// <summary>
-        /// Server tick: for every dog we tagged in NotifyDogs, check if it has
-        /// reached the bone. If so, despawn the bone and hand the itemstack to
-        /// the nearest player (or drop it on the ground if no player is in
-        /// range). The wolftaming AiTaskPlayFetch then sees the bone is gone
-        /// and naturally transitions to its BringToy state, walking the dog
-        /// back to the player.
+        /// Server tick: two phases.
+        ///   Phase 1 (pickup): for every dog we tagged in NotifyDogs, check if
+        ///     it has reached the bone. If so, despawn the bone and stash the
+        ///     itemstack in one of the dog's free hand slots so it visually
+        ///     "carries" the toy back. The wolftaming AiTaskPlayFetch then
+        ///     sees the bone is gone and naturally transitions to its BringToy
+        ///     state, walking the dog back to the player.
+        ///   Phase 2 (drop): for every dog that is currently carrying a bone,
+        ///     check if it is within 3 blocks of any player. If so, clear the
+        ///     hand slot and spawn the bone on the ground — vanilla auto-pickup
+        ///     then puts it in the player's inventory.
         ///
-        /// This works around the fact that AiTaskPlayFetch.GetToy()'s built-in
-        /// pickup (via LeftHandItemSlot) silently fails for the dogtoy item
-        /// in the current configuration, which would otherwise leave the dog
-        /// walking back empty.
+        /// We work around AiTaskPlayFetch.GetToy()'s built-in pickup (which
+        /// silently fails for the dogtoy item) by doing the carry/drop
+        /// ourselves in this tick handler. The dog doesn't truly "hold" the
+        /// bone in its mouth shape (the wolftaming dog model has no hand
+        /// element), but the item is in the slot during the return trip and
+        /// ends up on the ground next to the player.
         /// </summary>
         private void OnFetchTick(float dt)
         {
             if (Api?.World == null) return;
 
+            // Phase 1: pickup
             var keys = dogToyPairs.Keys.ToList();
             foreach (var dogId in keys)
             {
@@ -219,29 +228,104 @@ namespace PetAI
 
                 if (dog.Pos.SquareDistanceTo(dogToy.Pos) >= PickupSqrDistance) continue;
 
-                // Despawn the bone first, then route the itemstack to a player
-                // (or drop it) so the dog returns carrying nothing visible but
-                // the player still gets their bone back.
                 ItemStack stack = dogToy.Itemstack;
                 dogToy.Die(EnumDespawnReason.PickedUp);
                 dogToyPairs.Remove(dogId);
 
                 if (stack == null) continue;
 
-                var nearest = Api.World.GetNearestEntity(dog.Pos.XYZ, 50, 10, e => e is EntityPlayer) as EntityPlayer;
-                if (nearest != null)
+                if (dog is EntityAgent agent && TryCarryInMouth(agent, stack))
                 {
-                    var serverPlayer = nearest.World.PlayerByUid(nearest.PlayerUID) as IServerPlayer;
-                    if (serverPlayer != null)
-                    {
-                        serverPlayer.InventoryManager.TryGiveItemstack(stack);
-                        continue;
-                    }
+                    dogCarriedToy[dogId] = stack;
+                }
+                else
+                {
+                    GiveToNearestPlayer(dog, stack);
+                }
+            }
+
+            // Phase 2: drop near player
+            var carriedKeys = dogCarriedToy.Keys.ToList();
+            foreach (var dogId in carriedKeys)
+            {
+                if (!dogCarriedToy.TryGetValue(dogId, out var stack) || stack == null)
+                {
+                    dogCarriedToy.Remove(dogId);
+                    continue;
                 }
 
-                // No reachable player — drop the bone on the ground at the dog.
+                var dog = Api.World.GetEntityById(dogId);
+                if (dog == null || !dog.Alive)
+                {
+                    // Dog died while carrying — drop the bone where it fell.
+                    if (dog != null) Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
+                    dogCarriedToy.Remove(dogId);
+                    continue;
+                }
+
+                var player = Api.World.GetNearestEntity(dog.Pos.XYZ, 3, 3, e => e is EntityPlayer);
+                if (player == null) continue;
+
+                if (dog is EntityAgent agent) ClearMouth(agent);
                 Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
+                dogCarriedToy.Remove(dogId);
             }
+        }
+
+        /// <summary>
+        /// Put the bone into the first free hand slot on the dog. Direct
+        /// Itemstack assignment (bypassing Accepts) so it works even when the
+        /// slot's normal validation rejects the dogtoy item.
+        /// </summary>
+        private bool TryCarryInMouth(EntityAgent dog, ItemStack stack)
+        {
+            var left = dog.LeftHandItemSlot;
+            if (left != null && left.Itemstack == null)
+            {
+                left.Itemstack = stack;
+                left.MarkDirty();
+                return true;
+            }
+            var right = dog.RightHandItemSlot;
+            if (right != null && right.Itemstack == null)
+            {
+                right.Itemstack = stack;
+                right.MarkDirty();
+                return true;
+            }
+            return false;
+        }
+
+        private void ClearMouth(EntityAgent dog)
+        {
+            var left = dog.LeftHandItemSlot;
+            if (left != null && left.Itemstack != null)
+            {
+                left.Itemstack = null;
+                left.MarkDirty();
+                return;
+            }
+            var right = dog.RightHandItemSlot;
+            if (right != null && right.Itemstack != null)
+            {
+                right.Itemstack = null;
+                right.MarkDirty();
+            }
+        }
+
+        private void GiveToNearestPlayer(Entity dog, ItemStack stack)
+        {
+            var nearest = Api.World.GetNearestEntity(dog.Pos.XYZ, 50, 10, e => e is EntityPlayer) as EntityPlayer;
+            if (nearest != null)
+            {
+                var serverPlayer = nearest.World.PlayerByUid(nearest.PlayerUID) as IServerPlayer;
+                if (serverPlayer != null)
+                {
+                    serverPlayer.InventoryManager.TryGiveItemstack(stack);
+                    return;
+                }
+            }
+            Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
         }
 
         /// <summary>
