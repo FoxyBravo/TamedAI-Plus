@@ -1,8 +1,11 @@
 using System;
+using System.Linq;
+using System.Reflection;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
+using Vintagestory.GameContent;
 
 namespace PetAI
 {
@@ -151,9 +154,64 @@ namespace PetAI
                 (double)viewVec.Z * speed
             );
 
-            byEntity.World.SpawnItemEntity(taken, spawnPos, velocity);
+            EntityItem entity = byEntity.World.SpawnItemEntity(taken, spawnPos, velocity) as EntityItem;
+
+            if (entity != null)
+            {
+                NotifyDogs(entity);
+            }
 
             handling = EnumHandling.PreventDefault;
+        }
+
+        /// <summary>
+        /// Find nearby entities with an AiTaskPlayFetch task and point them at the
+        /// freshly thrown bone. AiTaskPlayFetch lives in the WolfTaming assembly,
+        /// which petai does not reference, so we look it up via reflection and
+        /// set its public DogToy property. Silently no-ops if wolftaming is not
+        /// loaded or the fetch task is not present on a given entity.
+        /// </summary>
+        private void NotifyDogs(EntityItem dogToy)
+        {
+            if (dogToy?.World == null) return;
+
+            var dogs = dogToy.World.GetEntitiesAround(dogToy.Pos.XYZ, 20f, 5f);
+            if (dogs == null) return;
+
+            Type playFetchType = null;
+            foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                var t = asm.GetType("WolfTaming.AiTaskPlayFetch");
+                if (t != null) { playFetchType = t; break; }
+            }
+            if (playFetchType == null) return;
+
+            PropertyInfo dogToyProp = playFetchType.GetProperty("DogToy");
+            if (dogToyProp == null) return;
+
+            foreach (var dog in dogs)
+            {
+                if (dog == null) continue;
+                var taskAi = dog.GetBehavior<EntityBehaviorTaskAI>();
+                if (taskAi == null) continue;
+
+                var taskManager = taskAi.TaskManager;
+                if (taskManager == null) continue;
+
+                // TaskManager.GetTask<T>() — locate the parameterless generic
+                // method definition and bind it to AiTaskPlayFetch at runtime.
+                var getTask = taskManager.GetType()
+                    .GetMethods(BindingFlags.Public | BindingFlags.Instance)
+                    .FirstOrDefault(m => m.Name == "GetTask" && m.IsGenericMethodDefinition && m.GetParameters().Length == 0)
+                    ?.MakeGenericMethod(playFetchType);
+                if (getTask == null) continue;
+
+                var task = getTask.Invoke(taskManager, null);
+                if (task != null)
+                {
+                    dogToyProp.SetValue(task, dogToy);
+                }
+            }
         }
     }
 }
