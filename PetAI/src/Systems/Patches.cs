@@ -191,12 +191,16 @@ namespace PetAI
         {
             harmony.Patch(MethodInfo()
                 , prefix: new HarmonyMethod(typeof(AiTaskMeleeAttackIsTargetableEntityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+            harmony.Patch(typeof(AiTaskBase).GetMethod("ContinueExecute", BindingFlags.Instance | BindingFlags.Public)
+                , postfix: new HarmonyMethod(typeof(AiTaskMeleeAttackIsTargetableEntityPatch).GetMethod("ContinueExecutePostfix", BindingFlags.Static | BindingFlags.Public)));
         }
 
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
                 , HarmonyPatchType.Prefix, "gerste.petai");
+            harmony.Unpatch(typeof(AiTaskBase).GetMethod("ContinueExecute", BindingFlags.Instance | BindingFlags.Public)
+                , HarmonyPatchType.Postfix, "gerste.petai");
         }
 
         public static MethodInfo MethodInfo()
@@ -218,6 +222,25 @@ namespace PetAI
                 return false;
             }
             return true;
+        }
+
+        public static void ContinueExecutePostfix(AiTaskBase __instance, float dt)
+        {
+            if (!(__instance is AiTaskBaseTargetable targetable)) return;
+            var targetField = typeof(AiTaskBaseTargetable).GetField("targetEntity", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (targetField == null) return;
+            var target = targetField.GetValue(targetable) as Entity;
+            if (target == null) return;
+            var mortallyWoundable = target.GetBehavior<EntityBehaviorMortallyWoundable>();
+            var tameable = target.GetBehavior<EntityBehaviorTameable>();
+            if (mortallyWoundable != null
+                && tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && mortallyWoundable.HealthState != EnumEntityHealthState.Normal)
+            {
+                targetField.SetValue(targetable, null);
+            }
         }
     }
 }
