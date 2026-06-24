@@ -49,12 +49,7 @@ namespace PetAI
             string animalType = Lang.Get("petai:gui-profile-animaltype-unknown");
             if (targetEntity != null)
             {
-                string codePath = targetEntity.Code.Path;
-                string speciesKey;
-                if (codePath.StartsWith("wolf")) speciesKey = "petai:gui-profile-species-wolf";
-                else if (codePath.StartsWith("dog")) speciesKey = "petai:gui-profile-species-dog";
-                else speciesKey = null;
-                string species = speciesKey != null ? Lang.Get(speciesKey) : targetEntity.GetName();
+                string species = targetEntity.GetName();
                 int gender = targetEntity.WatchedAttributes.GetInt("gender", 2);
                 string genderKey = gender == 0 ? "petai:gui-profile-gender-male"
                     : gender == 1 ? "petai:gui-profile-gender-female"
