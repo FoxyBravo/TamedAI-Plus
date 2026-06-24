@@ -38,7 +38,7 @@ namespace PetAI
         private const string AimingAttrKey = "petai:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
-        private const float PickupSqrDistance = 3.0f; // ~1.73 blocks — small bump to catch some hitbox misses
+        private const float PickupSqrDistance = 6.0f; // ~2.45 blocks — fires before wolftaming GetToy() (1.41) so petai wins the race
         private const float DropSqrDistance = 1.0f; // 1 block — bone lands at the player's feet
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
@@ -62,7 +62,7 @@ namespace PetAI
             }
             else if (api.Side == EnumAppSide.Server)
             {
-                tickListenerId = api.World.RegisterGameTickListener(OnFetchTick, 100);
+                tickListenerId = api.World.RegisterGameTickListener(OnFetchTick, 50);
             }
         }
 
