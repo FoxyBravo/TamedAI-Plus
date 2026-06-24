@@ -534,9 +534,7 @@ namespace PetAI
             if (CachedOwner == null) return;
 
             infotext
-                .AppendLine(Lang.Get("petai:gui-pet-owner", CachedOwner?.PlayerName))
-                .AppendLine(DomesticationLevel == DomesticationLevel.DOMESTICATED ? Lang.Get("petai:gui-pet-obedience", Math.Round(Obedience * 100, 2)) : Lang.Get("petai:gui-pet-domesticationProgress", Math.Round(DomesticationProgress * 100, 2)))
-                .AppendLine(Lang.Get("petai:gui-pet-nestsize", Lang.Get("petai:gui-pet-nestsize-" + Size.ToString().ToLower())));
+                .AppendLine(Lang.Get("petai:gui-pet-owner", CachedOwner?.PlayerName));
             if (entity.HasBehavior<EntityBehaviorHealth>())
             {
                 var beh = entity.GetBehavior<EntityBehaviorHealth>();

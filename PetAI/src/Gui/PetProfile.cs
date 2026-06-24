@@ -1,3 +1,4 @@
+using System;
 using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
@@ -47,6 +48,22 @@ namespace PetAI
             currentY += 40;
             int generation = targetEntity != null ? targetEntity.WatchedAttributes.GetInt("generation", 0) : 0;
             SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
+            currentY += 23;
+            var tameable = targetEntity?.GetBehavior<EntityBehaviorTameable>();
+            string sizeKey = tameable != null ? "petai:gui-pet-nestsize-" + tameable.Size.ToString().ToLower() : null;
+            double damageTierValue = 0;
+            if (tameable != null)
+            {
+                damageTierValue = tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                    ? Math.Round(tameable.Obedience * 100, 2)
+                    : Math.Round(tameable.DomesticationProgress * 100, 2);
+            }
+            SingleComposer.AddStaticText(
+                Lang.Get("petai:gui-profile-size", Lang.Get(sizeKey ?? "petai:gui-pet-nestsize-small"))
+                + "   "
+                + Lang.Get("petai:gui-profile-damagetier", damageTierValue),
+                CairoFont.WhiteSmallishText().WithFontSize(16),
+                ElementBounds.Fixed(0, currentY, 400, 18));
             currentY += 40;
             if (targetEntity?.HasBehavior<EntityBehaviorMultiply>() == true)
             {

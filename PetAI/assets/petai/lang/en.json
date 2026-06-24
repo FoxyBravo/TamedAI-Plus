@@ -115,6 +115,8 @@
     "gui-profile-title": "Pet Profile",
     "gui-profile-name": "Name:",
     "gui-profile-generation": "Current generation: {0}",
+    "gui-profile-size": "Size: {0}",
+    "gui-profile-damagetier": "Damage tier: {0}%",
     "gui-profile-multiply": "Pet reproduces:",
     "gui-profile-abandon": "Abandon pet:",
     "gui-profile-ok": "OK",
