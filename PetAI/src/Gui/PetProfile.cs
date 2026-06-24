@@ -46,6 +46,22 @@ namespace PetAI
             }, null, "petName");
             SingleComposer.GetTextInput("petName").SetValue(targetEntity?.GetBehavior<EntityBehaviorNameTag>()?.DisplayName);
             currentY += 55;
+            string animalType = Lang.Get("petai:gui-profile-animaltype-unknown");
+            if (targetEntity != null)
+            {
+                string species = targetEntity.Code.Path;
+                if (species.EndsWith("-male")) species = species.Substring(0, species.Length - 5);
+                else if (species.EndsWith("-female")) species = species.Substring(0, species.Length - 7);
+                int gender = targetEntity.WatchedAttributes.GetInt("gender", 2);
+                string genderKey = gender == 0 ? "petai:gui-profile-gender-male"
+                    : gender == 1 ? "petai:gui-profile-gender-female"
+                    : null;
+                animalType = genderKey != null
+                    ? Lang.Get("petai:gui-profile-animaltype", species, Lang.Get(genderKey))
+                    : Lang.Get("petai:gui-profile-animaltype-nogender", species);
+            }
+            SingleComposer.AddStaticText(animalType, CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 300, 18));
+            currentY += 23;
             int generation = targetEntity != null ? targetEntity.WatchedAttributes.GetInt("generation", 0) : 0;
             SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 23;
