@@ -4,7 +4,7 @@ namespace PetAI
 {
     public class MapMarkerConfig
     {
-        public float UpdateIntervalSeconds { get; set; } = 2;
+        public float UpdateIntervalSeconds { get; set; } = 0.5f;
         public string DefaultColor { get; set; } = "#ffffff";
         public string DefaultIcon { get; set; } = "pawprint";
         public string DownedColor { get; set; } = "#ff0000";
