@@ -46,10 +46,10 @@ namespace PetAI
             }, null, "petName");
             SingleComposer.GetTextInput("petName").SetValue(targetEntity?.GetBehavior<EntityBehaviorNameTag>()?.DisplayName);
             currentY += 55;
-            string animalType = Lang.Get("petai:gui-profile-animaltype-unknown");
+            string animalType = Lang.Get("Type: unknown");
             if (targetEntity != null)
             {
-                animalType = Lang.Get("game:entity-" + targetEntity.Code.Path);
+                animalType = Lang.Get("Type: " + targetEntity.Code.Path);
             }
             SingleComposer.AddStaticText(animalType, CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 300, 18));
             currentY += 23;
