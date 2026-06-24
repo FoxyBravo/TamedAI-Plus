@@ -45,25 +45,28 @@ namespace PetAI
                 petName = name;
             }, null, "petName");
             SingleComposer.GetTextInput("petName").SetValue(targetEntity?.GetBehavior<EntityBehaviorNameTag>()?.DisplayName);
-            currentY += 40;
+            currentY += 55;
             int generation = targetEntity != null ? targetEntity.WatchedAttributes.GetInt("generation", 0) : 0;
             SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 23;
             var tameable = targetEntity?.GetBehavior<EntityBehaviorTameable>();
             string sizeKey = tameable != null ? "petai:gui-pet-nestsize-" + tameable.Size.ToString().ToLower() : null;
-            double damageTierValue = 0;
-            if (tameable != null)
+            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-size", Lang.Get(sizeKey ?? "petai:gui-pet-nestsize-small")), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
+            currentY += 23;
+            int damageTier = 0;
+            if (targetEntity is EntityAgent agent)
             {
-                damageTierValue = tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
-                    ? Math.Round(tameable.Obedience * 100, 2)
-                    : Math.Round(tameable.DomesticationProgress * 100, 2);
+                var prop = typeof(EntityAgent).GetProperty("DamageTier", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                if (prop != null && prop.PropertyType == typeof(int))
+                {
+                    damageTier = (int)prop.GetValue(agent);
+                }
+                else
+                {
+                    damageTier = (int)agent.Stats.GetBlended("damageTier");
+                }
             }
-            SingleComposer.AddStaticText(
-                Lang.Get("petai:gui-profile-size", Lang.Get(sizeKey ?? "petai:gui-pet-nestsize-small"))
-                + "   "
-                + Lang.Get("petai:gui-profile-damagetier", damageTierValue),
-                CairoFont.WhiteSmallishText().WithFontSize(16),
-                ElementBounds.Fixed(0, currentY, 400, 18));
+            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-damagetier", damageTier), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 40;
             if (targetEntity?.HasBehavior<EntityBehaviorMultiply>() == true)
             {
