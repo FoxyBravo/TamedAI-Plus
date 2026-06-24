@@ -52,21 +52,6 @@ namespace PetAI
             var tameable = targetEntity?.GetBehavior<EntityBehaviorTameable>();
             string sizeKey = tameable != null ? "petai:gui-pet-nestsize-" + tameable.Size.ToString().ToLower() : null;
             SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-size", Lang.Get(sizeKey ?? "petai:gui-pet-nestsize-small")), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
-            currentY += 23;
-            int damageTier = 0;
-            if (targetEntity is EntityAgent agent)
-            {
-                var prop = typeof(EntityAgent).GetProperty("DamageTier", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
-                if (prop != null && prop.PropertyType == typeof(int))
-                {
-                    damageTier = (int)prop.GetValue(agent);
-                }
-                else
-                {
-                    damageTier = (int)agent.Stats.GetBlended("damageTier");
-                }
-            }
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-damagetier", damageTier), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 40;
             if (targetEntity?.HasBehavior<EntityBehaviorMultiply>() == true)
             {
