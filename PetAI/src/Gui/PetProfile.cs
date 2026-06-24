@@ -49,14 +49,7 @@ namespace PetAI
             string animalType = Lang.Get("petai:gui-profile-animaltype-unknown");
             if (targetEntity != null)
             {
-                string species = targetEntity.GetName();
-                int gender = targetEntity.WatchedAttributes.GetInt("gender", 2);
-                string genderKey = gender == 0 ? "petai:gui-profile-gender-male"
-                    : gender == 1 ? "petai:gui-profile-gender-female"
-                    : null;
-                animalType = genderKey != null
-                    ? Lang.Get("petai:gui-profile-animaltype", species, Lang.Get(genderKey))
-                    : Lang.Get("petai:gui-profile-animaltype-nogender", species);
+                animalType = Lang.Get("game:entity-" + targetEntity.Code.Path);
             }
             SingleComposer.AddStaticText(animalType, CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 300, 18));
             currentY += 23;
