@@ -201,9 +201,9 @@ namespace PetAI
 
         public static MethodInfo MethodInfo()
         {
-            return typeof(AiTaskMeleeAttack).GetMethod("IsTargetableEntity", BindingFlags.Instance | BindingFlags.Public);
+            return typeof(AiTaskBaseTargetable).GetMethod("IsTargetableEntity", BindingFlags.Instance | BindingFlags.Public);
         }
-        public static bool Prefix(AiTaskMeleeAttack __instance, Entity e, ref bool __result)
+        public static bool Prefix(AiTaskBaseTargetable __instance, Entity e, ref bool __result)
         {
             if (e == null) return true;
             var mortallyWoundable = e.GetBehavior<EntityBehaviorMortallyWoundable>();
