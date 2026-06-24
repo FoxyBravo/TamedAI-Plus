@@ -38,7 +38,7 @@ namespace PetAI
         private const string AimingAttrKey = "petai:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
-        private const float PickupSqrDistance = 2.0f;
+        private const float PickupSqrDistance = 3.0f; // ~1.73 blocks — small bump to catch some hitbox misses
         private const float DropSqrDistance = 1.0f; // 1 block — bone lands at the player's feet
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
