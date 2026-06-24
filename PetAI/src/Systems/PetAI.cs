@@ -27,6 +27,7 @@ namespace PetAI
             EntityBehaviorHealthGetInfoTextPatch.Patch(harmony);
             ChewingBoneStackingPatch.Patch(harmony);
             HuntingDogFetchSpeedPatch.Patch(harmony, api);
+            AiTaskMeleeAttackIsTargetableEntityPatch.Patch(harmony);
 
             api.RegisterEntityBehaviorClass("tameable", typeof(EntityBehaviorTameable));
             api.RegisterEntityBehaviorClass("petinventory", typeof(EntityBehaviorPetInventory));

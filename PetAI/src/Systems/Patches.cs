@@ -184,4 +184,40 @@ namespace PetAI
             __instance.OnNoPath(null);
         }
     }
+
+    public class AiTaskMeleeAttackIsTargetableEntityPatch
+    {
+        public static void Patch(Harmony harmony)
+        {
+            harmony.Patch(MethodInfo()
+                , prefix: new HarmonyMethod(typeof(AiTaskMeleeAttackIsTargetableEntityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+        }
+
+        public static void Unpatch(Harmony harmony)
+        {
+            harmony.Unpatch(MethodInfo()
+                , HarmonyPatchType.Prefix, "gerste.petai");
+        }
+
+        public static MethodInfo MethodInfo()
+        {
+            return typeof(AiTaskMeleeAttack).GetMethod("IsTargetableEntity", BindingFlags.Instance | BindingFlags.Public);
+        }
+        public static bool Prefix(AiTaskMeleeAttack __instance, Entity e, ref bool __result)
+        {
+            if (e == null) return true;
+            var mortallyWoundable = e.GetBehavior<EntityBehaviorMortallyWoundable>();
+            var tameable = e.GetBehavior<EntityBehaviorTameable>();
+            if (mortallyWoundable != null
+                && tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && mortallyWoundable.HealthState != EnumEntityHealthState.Normal)
+            {
+                __result = false;
+                return false;
+            }
+            return true;
+        }
+    }
 }
