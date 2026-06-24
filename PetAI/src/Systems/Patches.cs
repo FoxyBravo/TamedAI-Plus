@@ -221,7 +221,36 @@ namespace PetAI
                 __result = false;
                 return false;
             }
+            if (tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && IsDogOrWolf(e))
+            {
+                var attacker = __instance.entity;
+                if (IsWildWolf(attacker)
+                    && attacker.World.Rand.NextDouble() < 0.5)
+                {
+                    __result = false;
+                    return false;
+                }
+            }
             return true;
+        }
+
+        private static bool IsDogOrWolf(Entity e)
+        {
+            if (e?.Code == null) return false;
+            string path = e.Code.Path;
+            return path.StartsWith("dog-") || path.StartsWith("wolf-");
+        }
+
+        private static bool IsWildWolf(Entity e)
+        {
+            if (e?.Code == null) return false;
+            string path = e.Code.Path;
+            if (path != "wolf-male" && path != "wolf-female") return false;
+            var tameable = e.GetBehavior<EntityBehaviorTameable>();
+            return tameable == null || string.IsNullOrEmpty(tameable.OwnerId);
         }
 
         public static void ContinueExecutePostfix(AiTaskBase __instance, float dt)
