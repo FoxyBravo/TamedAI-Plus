@@ -1,4 +1,4 @@
-# PetAI — Changelog
+# TamedAI Plus — Changelog
 
 > Track of all changes shipped on the `feature/stay-guard-restricted-roam` branch
 > on top of upstream `main` (v5.1.1). Current head: **v5.1.63**.
