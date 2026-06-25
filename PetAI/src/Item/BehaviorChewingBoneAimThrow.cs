@@ -11,35 +11,13 @@ using Vintagestory.GameContent;
 
 namespace TamedAIPlus
 {
-    /// <summary>
-    /// Aim-throw behavior for the Chewing bone (wolftaming:dogtoy).
-    ///
-    /// Flow:
-    ///   OnHeldInteractStart  -> enter aim state, suppress default use
-    ///   OnHeldInteractStep   -> (client) raise the held bone, keep aim alive
-    ///   OnHeldInteractCancel -> leave aim state (player cancelled, did not release)
-    ///   OnHeldInteractStop   -> (server) decrement durability, spawn the bone
-    ///                           as a normal item entity with velocity in the
-    ///                           player's look direction
-    ///
-    /// Durability is preserved from the previous behavior: the held stack is
-    /// damaged by 1 on a successful release, so the spawned entity carries
-    /// the decremented stack. The wolftaming dogtoy AI task can then fetch
-    /// it and return the same (decremented) stack to the player.
-    ///
-    /// The aim is simply the player's look direction at the moment of
-    /// release (pitch + yaw). No separate crosshair or trajectory preview:
-    /// the vanilla crosshair is the aim point, and the player aims by
-    /// pointing the camera, then holds right-click to charge, then releases
-    /// to throw.
-    /// </summary>
     class BehaviorChewingBoneAimThrow : CollectibleBehavior
     {
         private const string AimingAttrKey = "tamedaiplus:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
-        private const float PickupSqrDistance = 3.0f; // ~1.73 blocks — small bump to catch some hitbox misses
-        private const float DropSqrDistance = 1.0f; // 1 block — bone lands at the player's feet
+        private const float PickupSqrDistance = 3.0f;
+        private const float DropSqrDistance = 1.0f;
 
         private static readonly Dictionary<long, EntityItem> dogToyPairs = new Dictionary<long, EntityItem>();
         private static readonly Dictionary<long, ItemStack> dogCarriedToy = new Dictionary<long, ItemStack>();
@@ -148,11 +126,6 @@ namespace TamedAIPlus
                 return;
             }
 
-            // Take the bone out of the slot first, then damage the taken bone
-            // via a DummySlot so the remaining stack in the player's hand is
-            // untouched. Otherwise DamageItem would tick durability on the
-            // whole stack before TakeOut and the rest of the stack would
-            // lose a durability point too.
             ItemStack taken = slot.TakeOut(1);
             if (taken == null) return;
             slot.MarkDirty();
@@ -187,26 +160,6 @@ namespace TamedAIPlus
             handling = EnumHandling.PreventDefault;
         }
 
-        /// <summary>
-        /// Server tick: two phases.
-        ///   Phase 1 (pickup): for every dog we tagged in NotifyDogs, check if
-        ///     it has reached the bone. If so, despawn the bone and stash the
-        ///     itemstack in one of the dog's free hand slots so it visually
-        ///     "carries" the toy back. The wolftaming AiTaskPlayFetch then
-        ///     sees the bone is gone and naturally transitions to its BringToy
-        ///     state, walking the dog back to the player.
-        ///   Phase 2 (drop): for every dog that is currently carrying a bone,
-        ///     check if it is within 3 blocks of any player. If so, clear the
-        ///     hand slot and spawn the bone on the ground — vanilla auto-pickup
-        ///     then puts it in the player's inventory.
-        ///
-        /// We work around AiTaskPlayFetch.GetToy()'s built-in pickup (which
-        /// silently fails for the dogtoy item) by doing the carry/drop
-        /// ourselves in this tick handler. The dog doesn't truly "hold" the
-        /// bone in its mouth shape (the wolftaming dog model has no hand
-        /// element), but the item is in the slot during the return trip and
-        /// ends up on the ground next to the player.
-        /// </summary>
         private void OnFetchTick(float dt)
         {
             if (Api?.World == null) return;
@@ -270,7 +223,6 @@ namespace TamedAIPlus
                 var dog = Api.World.GetEntityById(dogId);
                 if (dog == null || !dog.Alive)
                 {
-                    // Dog died while carrying — drop the bone where it fell.
                     if (dog != null) Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
                     dogCarriedToy.Remove(dogId);
                     continue;
@@ -287,11 +239,6 @@ namespace TamedAIPlus
             }
         }
 
-        /// <summary>
-        /// Put the bone into the first free hand slot on the dog. Direct
-        /// Itemstack assignment (bypassing Accepts) so it works even when the
-        /// slot's normal validation rejects the dogtoy item.
-        /// </summary>
         private bool TryCarryInMouth(EntityAgent dog, ItemStack stack)
         {
             var left = dog.LeftHandItemSlot;
@@ -311,13 +258,6 @@ namespace TamedAIPlus
             return false;
         }
 
-        /// <summary>
-        /// Check whether the dog already has the given stack in either hand
-        /// slot. Used to detect when the wolftaming AiTaskPlayFetch's own
-        /// pickup won the race against our TryCarryInMouth, so we can still
-        /// track the bone for the drop phase instead of giving it to the
-        /// player as a fallback.
-        /// </summary>
         private bool HasItemInHand(EntityAgent dog, ItemStack stack)
         {
             if (stack == null) return false;
@@ -360,13 +300,6 @@ namespace TamedAIPlus
             Api.World.SpawnItemEntity(stack, dog.Pos.XYZ);
         }
 
-        /// <summary>
-        /// Find nearby entities with an AiTaskPlayFetch task and point them at the
-        /// freshly thrown bone. AiTaskPlayFetch lives in the WolfTaming assembly,
-        /// which TamedAI-Plus does not reference, so we look it up via reflection and
-        /// set its public DogToy property. Silently no-ops if wolftaming is not
-        /// loaded or the fetch task is not present on a given entity.
-        /// </summary>
         private void NotifyDogs(EntityItem dogToy)
         {
             if (dogToy?.World == null) return;
@@ -394,8 +327,6 @@ namespace TamedAIPlus
                 var taskManager = taskAi.TaskManager;
                 if (taskManager == null) continue;
 
-                // TaskManager.GetTask<T>() — locate the parameterless generic
-                // method definition and bind it to AiTaskPlayFetch at runtime.
                 var getTask = taskManager.GetType()
                     .GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .FirstOrDefault(m => m.Name == "GetTask" && m.IsGenericMethodDefinition && m.GetParameters().Length == 0)
