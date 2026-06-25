@@ -9,7 +9,7 @@ using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     /// <summary>
     /// Aim-throw behavior for the Chewing bone (wolftaming:dogtoy).
@@ -35,7 +35,7 @@ namespace PetAI
     /// </summary>
     class BehaviorChewingBoneAimThrow : CollectibleBehavior
     {
-        private const string AimingAttrKey = "petai:chewingbone-aiming";
+        private const string AimingAttrKey = "tamedaiplus:chewingbone-aiming";
 
         private const float SpawnForwardOffset = 0.5f;
         private const float PickupSqrDistance = 3.0f; // ~1.73 blocks — small bump to catch some hitbox misses
@@ -363,7 +363,7 @@ namespace PetAI
         /// <summary>
         /// Find nearby entities with an AiTaskPlayFetch task and point them at the
         /// freshly thrown bone. AiTaskPlayFetch lives in the WolfTaming assembly,
-        /// which petai does not reference, so we look it up via reflection and
+        /// which TamedAI-Plus does not reference, so we look it up via reflection and
         /// set its public DogToy property. Silently no-ops if wolftaming is not
         /// loaded or the fetch task is not present on a given entity.
         /// </summary>

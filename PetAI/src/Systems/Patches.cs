@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class MultiplyPatch
     {
@@ -18,7 +18,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -52,7 +52,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -89,7 +89,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -117,7 +117,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -147,7 +147,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -172,7 +172,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -198,9 +198,9 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
             harmony.Unpatch(typeof(AiTaskBase).GetMethod("ContinueExecute", BindingFlags.Instance | BindingFlags.Public)
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()

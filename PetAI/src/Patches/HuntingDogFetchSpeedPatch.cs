@@ -4,7 +4,7 @@ using HarmonyLib;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     /// <summary>
     /// Slow down the huntingdog's fetch speed to match (or get closer to)
@@ -14,7 +14,7 @@ namespace PetAI
     ///
     /// Implementation: defer the patch by 1 tick (RegisterCallback) so the
     /// wolftaming assembly is loaded by the time we look it up via
-    /// reflection (petai's Start runs before wolftaming is loaded). Then
+    /// reflection (TamedAI-Plus's Start runs before wolftaming is loaded). Then
     /// Harmony-prefix StartExecute on the wolftaming AiTaskPlayFetch and,
     /// when the entity is a huntingdog, drop moveSpeed from the default
     /// 0.03f to 0.02f. Patching StartExecute is more reliable than

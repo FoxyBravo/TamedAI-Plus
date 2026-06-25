@@ -1,6 +1,6 @@
 using System.Drawing;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class MapMarkerConfig
     {

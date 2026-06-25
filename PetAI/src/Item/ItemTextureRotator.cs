@@ -1,7 +1,7 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class ItemTextureRotator : Item
     {

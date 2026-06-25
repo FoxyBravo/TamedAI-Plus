@@ -4,7 +4,7 @@ using System.IO;
 using System.Text;
 using Vintagestory.API.Datastructures;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class PetUtil
     {

@@ -1,25 +1,25 @@
 using Vintagestory.API.Common;
 using Vintagestory.API.Server;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class MapMarkerModSystem : ModSystem
     {
-        public PetMapMarkerTracker Tracker { get; private set; }
+        public TamedAIPlusMapMarkerTracker Tracker { get; private set; }
 
         public override void Start(ICoreAPI api) { }
 
         public override void StartServerSide(ICoreServerAPI api)
         {
-            var cfg = api.LoadModConfig<MapMarkerConfig>("petaimapmarkers.json") ?? new MapMarkerConfig();
+            var cfg = api.LoadModConfig<MapMarkerConfig>("tamedaiplus-mapmarkers.json") ?? new MapMarkerConfig();
             try
             {
-                Tracker = new PetMapMarkerTracker(api, cfg);
-                api.Logger.Notification("[PetMapMarker] tracker initialised");
+                Tracker = new TamedAIPlusMapMarkerTracker(api, cfg);
+                api.Logger.Notification("[TamedAIPlusMapMarker] tracker initialised");
             }
             catch (System.Exception e)
             {
-                api.Logger.Error("[PetMapMarker] failed to initialise tracker: " + e);
+                api.Logger.Error("[TamedAIPlusMapMarker] failed to initialise tracker: " + e);
             }
         }
     }

@@ -8,9 +8,9 @@ using Vintagestory.API.Server;
 using Vintagestory.API.Util;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
-    public class PetMapMarkerTracker
+    public class TamedAIPlusMapMarkerTracker
     {
         public readonly int IntervalMs;
 
@@ -35,7 +35,7 @@ namespace PetAI
 
         private const string originalIdKey = "petmarker:originalId";
 
-        public PetMapMarkerTracker(ICoreServerAPI sapi, MapMarkerConfig cfg)
+        public TamedAIPlusMapMarkerTracker(ICoreServerAPI sapi, MapMarkerConfig cfg)
         {
             this.sapi = sapi;
             this.cfg = cfg;
@@ -47,7 +47,7 @@ namespace PetAI
             sapi.Event.PlayerJoin += OnPlayerJoin;
 
             sapi.Event.RegisterGameTickListener(OnTick, IntervalMs);
-            LogNotification("PetMapMarker started; tracking " + IntervalMs + "ms ticks");
+            LogNotification("TamedAIPlusMapMarker started; tracking " + IntervalMs + "ms ticks");
 
             if (cfg.FullScanMinutes > 0)
             {
@@ -109,7 +109,7 @@ namespace PetAI
             }
             catch (Exception e)
             {
-                LogError($"exception in PetMapMarkerTracker OnTick: {e}");
+                LogError($"exception in TamedAIPlusMapMarkerTracker OnTick: {e}");
             }
         }
 
@@ -223,10 +223,10 @@ namespace PetAI
 
             LogNotification($"Watching over tameable {title}");
 
-            const string petaiDomesticationStatusKey = "domesticationstatus";
+            const string domesticationStatusKey = "domesticationstatus";
             var watched = entity.WatchedAttributes;
             watched.RegisterModifiedListener(
-                petaiDomesticationStatusKey,
+                domesticationStatusKey,
                 () =>
                 {
                     try
@@ -238,7 +238,7 @@ namespace PetAI
                         {
                             LogNotification($"Tracked pet {title} lost owner - forget pet");
                             if (tameable == null)
-                                LogError("Domestication status was removed - but this should never happen with PetAI?!");
+                                LogError("Domestication status was removed - but this should never happen with TamedAI-Plus?!");
                             var pet = tracked[entity.EntityId];
                             bool r = tracked.Remove(entity.EntityId);
                             if (!r)
@@ -533,12 +533,12 @@ namespace PetAI
 
         private void LogNotification(string message)
         {
-            sapi.World.Logger.Notification("[PetMapMarker] " + message);
+            sapi.World.Logger.Notification("[TamedAIPlusMapMarker] " + message);
         }
 
         private void LogError(string message)
         {
-            sapi.World.Logger.Error("[PetMapMarker][ERROR] " + message);
+            sapi.World.Logger.Error("[TamedAIPlusMapMarker][ERROR] " + message);
         }
 
         public static bool IsDowned(Entity entity)

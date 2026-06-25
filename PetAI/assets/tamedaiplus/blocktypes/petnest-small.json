@@ -49,7 +49,7 @@
         "base": "petnest-{size}"
     },
     "texture": {
-        "base": "game:block/cloth/linen/{color}"
+        "base": "tamedaiplus:block/cushion/small/{color}"
     },
     "selectionBoxes": [
         {

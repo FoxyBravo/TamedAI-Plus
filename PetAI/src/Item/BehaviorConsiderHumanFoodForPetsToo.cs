@@ -1,6 +1,6 @@
 using Vintagestory.API.Common;
 
-namespace PetAI {
+namespace TamedAIPlus {
     class BehaviorConsiderHumanFoodForPetsToo : CollectibleBehavior
     {
         public BehaviorConsiderHumanFoodForPetsToo(CollectibleObject collObj) : base(collObj)

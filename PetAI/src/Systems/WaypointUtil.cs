@@ -5,7 +5,7 @@ using System.Reflection;
 using Vintagestory.API.Server;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public static class WaypointUtil
     {

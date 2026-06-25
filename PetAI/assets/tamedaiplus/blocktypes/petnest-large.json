@@ -150,7 +150,7 @@
         }
     },
     "texture": {
-        "base": "game:block/cloth/linen/{color}"
+        "base": "tamedaiplus:block/cushion/large/{color}"
     },
     "selectionBoxes": [
         {
@@ -169,7 +169,7 @@
     ],
     "drops": [
         {
-            "code": "petai:petnest-{size}-{color}-north"
+            "code": "tamedaiplus:petnest-{size}-{color}-north"
         }
     ],
     "blockmaterial": "Cloth",

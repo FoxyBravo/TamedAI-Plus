@@ -4,7 +4,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class AiTaskPetFlee : AiTaskBase
     {
@@ -35,13 +35,13 @@ namespace PetAI
             if (receiveBehavior == null) return false;
             if (receiveBehavior.AggressionLevel != EnumAggressionLevel.PASSIVE) return false;
 
-            int lastDamageMs = entity.WatchedAttributes.GetInt("petai:lastDamageMs");
+            int lastDamageMs = entity.WatchedAttributes.GetInt("tamedaiplus:lastDamageMs");
             if (lastDamageMs == 0) return false;
             long now = entity.World.ElapsedMilliseconds % int.MaxValue;
             long delta = now >= lastDamageMs ? now - lastDamageMs : (int.MaxValue - lastDamageMs) + now;
             if (delta > fleeSeconds * 1000) return false;
 
-            int damagerId = entity.WatchedAttributes.GetInt("petai:lastDamagerId");
+            int damagerId = entity.WatchedAttributes.GetInt("tamedaiplus:lastDamagerId");
             if (damagerId == 0) return false;
             damager = entity.World.GetEntityById(damagerId);
             if (damager == null || !damager.Alive) return false;

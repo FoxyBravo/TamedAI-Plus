@@ -2,19 +2,19 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     /// <summary>
     /// Client-side crosshair renderer for the Chewing bone aim throw.
     /// Draws a white ring + center dot + cardinal tick marks at screen center
     /// while the local player is aiming. The texture is loaded from
-    /// assets/petai/textures/gui/chewingbone-crosshair.png.
+    /// assets/tamedai-plus/textures/gui/chewingbone-crosshair.png.
     /// </summary>
     public class ChewingBoneCrosshair : IRenderer
     {
-        private const string AimingAttrKey = "petai:chewingbone-aiming";
+        private const string AimingAttrKey = "tamedaiplus:chewingbone-aiming";
         private static readonly AssetLocation TexturePath =
-            new AssetLocation("petai", "textures/gui/chewingbone-crosshair.png");
+            new AssetLocation("tamedaiplus", "textures/gui/chewingbone-crosshair.png");
 
         private ICoreClientAPI capi;
         private LoadedTexture crosshairTexture;

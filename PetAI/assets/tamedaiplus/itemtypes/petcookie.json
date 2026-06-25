@@ -27,17 +27,17 @@
 	"texturesbytype": {
 		"*-raw": {
 			"cookie": {
-				"base": "game:block/food/pie/amaranth1"
+				"base": "tamedaiplus:item/animalcookie-raw"
 			}
 		},
 		"*-partbaked": {
 			"cookie": {
-				"base": "game:block/food/pie/amaranth2"
+				"base": "tamedaiplus:item/animalcookie-partbaked"
 			}
 		},
 		"*-perfect": {
 			"cookie": {
-				"base": "game:block/food/pie/amaranth3"
+				"base": "tamedaiplus:item/animalcookie-perfect"
 			}
 		}
 	},
@@ -59,7 +59,7 @@
 				"levelTo": 0.5,
 				"startScaleY": 0.95,
 				"endScaleY": 1.10,
-				"resultCode": "petai:petcookie-{type}-partbaked"
+				"resultCode": "tamedaiplus:petcookie-{type}-partbaked"
 			}
 		},
 		"*-partbaked": {
@@ -71,8 +71,8 @@
 				"levelTo": 0.5,
 				"startScaleY": 0.95,
 				"endScaleY": 1.10,
-				"resultCode": "petai:petcookie-{type}-perfect",
-				"initialCode": "petai:petcookie-{type}-raw"
+				"resultCode": "tamedaiplus:petcookie-{type}-perfect",
+				"initialCode": "tamedaiplus:petcookie-{type}-raw"
 			}
 		},
 		"*-perfect": {
@@ -84,7 +84,7 @@
 				"levelTo": 0.75,
 				"startScaleY": 1.10,
 				"endScaleY": 1.13,
-				"initialCode": "petai:petcookie-{type}-partbaked"
+				"initialCode": "tamedaiplus:petcookie-{type}-partbaked"
 			}
 		}
 	},

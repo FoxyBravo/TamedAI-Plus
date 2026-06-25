@@ -1,4 +1,4 @@
-# PetAI Mod — Project Knowledge
+# TamedAI-Plus Mod — Project Knowledge
 
 ## Build
 - Project: `PetAI\PetAI.csproj`
@@ -11,10 +11,10 @@ The game loads mods from **`%appdata%\VintagestoryData\Mods\`**, NOT `%appdata%\
 
 Deploy steps:
 1. `dotnet build -c Release` in `PetAI\`
-2. Delete old version folder: `Remove-Item "%appdata%\VintagestoryData\Mods\petai-vX.Y.Z" -Recurse -Force`
-3. Copy build output: `robocopy "PetAI\bin\Release\Mods\mod" "%appdata%\VintagestoryData\Mods\petai-vX.Y.Z" /E /IS`
+2. Delete old version folder: `Remove-Item "%appdata%\VintagestoryData\Mods\tamedai-plus-vX.Y.Z" -Recurse -Force`
+3. Copy build output: `robocopy "PetAI\bin\Release\Mods\mod" "%appdata%\VintagestoryData\Mods\tamedai-plus-vX.Y.Z" /E /IS`
 
-The folder name includes the version (e.g., `petai-v5.1.3`). Use `robocopy` instead of `Copy-Item` for reliable file copying.
+The folder name includes the version (e.g., `tamedai-plus-v5.1.64`). Use `robocopy` instead of `Copy-Item` for reliable file copying.
 
 ## Version
 - Update in `PetAI\modinfo.json` before building
@@ -22,8 +22,8 @@ The folder name includes the version (e.g., `petai-v5.1.3`). Use `robocopy` inst
 
 ## Key Files
 - `PetAI\src\Entity\AITask\AiTaskRestrictedRoam.cs` — merged stay/guard AI task
-- `PetAI\src\Systems\PetAI.cs` — task registration
-- `PetAI\assets\petai\patches\entities\dog-guard.json` — guard task config (maxdistance: 50)
+- `PetAI\src\Systems\TamedAIPlus.cs` — task registration
+- `PetAI\assets\tamedai-plus\patches\entities\dog-guard.json` — guard task config (maxdistance: 50)
 
 ## Feature Branch
 - `feature/stay-guard-restricted-roam` — incremental commits for stay/guard refactor

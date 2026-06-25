@@ -5,7 +5,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class PetProfileGUI : GuiDialog
     {
@@ -31,9 +31,9 @@ namespace PetAI
 
             SingleComposer = capi.Gui.CreateCompo("PetProfileDialog-", dialogBounds)
                 .AddShadedDialogBG(bgBounds)
-                .AddDialogTitleBar(Lang.Get("petai:gui-profile-title"), () => TryClose())
+                .AddDialogTitleBar(Lang.Get("tamedaiplus:gui-profile-title"), () => TryClose())
                 .BeginChildElements(bgBounds);
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-name"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+            SingleComposer.AddStaticText(Lang.Get("tamedaiplus:gui-profile-name"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
             currentY += 23;
             SingleComposer.AddTextInput(ElementBounds.Fixed(0, currentY, 200, 35), (name) =>
             {
@@ -54,26 +54,26 @@ namespace PetAI
             SingleComposer.AddStaticText(animalType, CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 300, 18));
             currentY += 23;
             int generation = targetEntity != null ? targetEntity.WatchedAttributes.GetInt("generation", 0) : 0;
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
+            SingleComposer.AddStaticText(Lang.Get("tamedaiplus:gui-profile-generation", generation), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 23;
             var tameable = targetEntity?.GetBehavior<EntityBehaviorTameable>();
-            string sizeKey = tameable != null ? "petai:gui-pet-nestsize-" + tameable.Size.ToString().ToLower() : null;
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-size", Lang.Get(sizeKey ?? "petai:gui-pet-nestsize-small")), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
+            string sizeKey = tameable != null ? "tamedaiplus:gui-animal-nestsize-" + tameable.Size.ToString().ToLower() : null;
+            SingleComposer.AddStaticText(Lang.Get("tamedaiplus:gui-profile-size", Lang.Get(sizeKey ?? "tamedaiplus:gui-animal-nestsize-small")), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 240, 18));
             currentY += 40;
             if (targetEntity?.HasBehavior<EntityBehaviorMultiply>() == true)
             {
                 var multiply = targetEntity.GetBehavior<EntityBehaviorTameable>().MultiplyAllowed;
                 multiplyAllowed = multiply;
-                SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-multiply"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+                SingleComposer.AddStaticText(Lang.Get("tamedaiplus:gui-profile-multiply"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
                 SingleComposer.AddSwitch(value => multiplyAllowed = value, ElementBounds.Fixed(150, currentY, 200, 18), "multiplyAllowed");
                 SingleComposer.GetSwitch("multiplyAllowed").SetValue(multiply);
                 currentY += 40;
             }
-            SingleComposer.AddStaticText(Lang.Get("petai:gui-profile-abandon"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
+            SingleComposer.AddStaticText(Lang.Get("tamedaiplus:gui-profile-abandon"), CairoFont.WhiteSmallishText().WithFontSize(16), ElementBounds.Fixed(0, currentY, 200, 18));
             SingleComposer.AddSwitch(value => abandon = value, ElementBounds.Fixed(150, currentY, 200, 18), "abandon");
             currentY += 40;
-            SingleComposer.AddButton(Lang.Get("petai:gui-profile-ok"), () => OnClick(), ElementBounds.Fixed(0, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
-                .AddButton(Lang.Get("petai:gui-profile-cancel"), () => TryClose(), ElementBounds.Fixed(120, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
+            SingleComposer.AddButton(Lang.Get("tamedaiplus:gui-profile-ok"), () => OnClick(), ElementBounds.Fixed(0, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
+                .AddButton(Lang.Get("tamedaiplus:gui-profile-cancel"), () => TryClose(), ElementBounds.Fixed(120, currentY, 110, 35), CairoFont.ButtonText().WithFontSize(16), EnumButtonStyle.Normal, EnumTextOrientation.Center)
                 .EndChildElements()
                 .Compose();
         }
@@ -87,7 +87,7 @@ namespace PetAI
                 targetEntityUID = targetEntityId
             };
 
-            capi.Network.GetChannel("petainetwork").SendPacket(message);
+            capi.Network.GetChannel("tamedaiplus-network").SendPacket(message);
 
             TryClose();
             return true;

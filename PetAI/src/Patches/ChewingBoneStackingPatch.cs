@@ -2,7 +2,7 @@ using System.Reflection;
 using HarmonyLib;
 using Vintagestory.API.Common;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     /// <summary>
     /// Stacking rule for the chewing bone (wolftaming:dogtoy).

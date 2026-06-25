@@ -5,7 +5,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class AiTaskPetSeekEntity : AiTaskSeekEntity
     {
@@ -43,8 +43,8 @@ namespace PetAI
         public AiTaskPetSeekEntity(EntityAgent entity, JsonObject taskConfig, JsonObject aiConfig) : base(entity, taskConfig, aiConfig)
         {
             isCommandable = taskConfig["isCommandable"].AsBool(false);
-            moveSpeed *= PetConfig.Current.Difficulty.petSpeedMultiplier;
-            animMeta.AnimationSpeed *= PetConfig.Current.Difficulty.petSpeedMultiplier;
+            moveSpeed *= TamedAIPlusConfig.Current.Difficulty.petSpeedMultiplier;
+            animMeta.AnimationSpeed *= TamedAIPlusConfig.Current.Difficulty.petSpeedMultiplier;
         }
 
         public override bool ShouldExecute()
@@ -109,7 +109,7 @@ namespace PetAI
                 {
                     return false;
                 }
-                if (!PetConfig.Current.PvpOn && tameable?.DomesticationLevel != DomesticationLevel.WILD && player.PlayerUID != tameable?.OwnerId)
+                if (!TamedAIPlusConfig.Current.PvpOn && tameable?.DomesticationLevel != DomesticationLevel.WILD && player.PlayerUID != tameable?.OwnerId)
                 {
                     return false;
                 }

@@ -8,7 +8,7 @@ using Vintagestory.API.Config;
 using Vintagestory.GameContent;
 using System.Collections.Generic;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class EntityBehaviorReceiveCommand : EntityBehavior
     {
@@ -98,7 +98,7 @@ namespace PetAI
             if (isDowned)
             {
                 if (entity.Api is ICoreClientAPI capi)
-                    capi.ShowChatMessage(Lang.Get("petai:gui-pet-downed"));
+                    capi.ShowChatMessage(Lang.Get("tamedaiplus:gui-animal-downed"));
                 return;
             }
             handled = EnumHandling.PreventSubsequent;
@@ -174,7 +174,7 @@ namespace PetAI
                 [
                     new WorldInteraction()
                     {
-                        ActionLangCode = "petai:interact-command",
+                        ActionLangCode = "tamedaiplus:interact-command",
                         HotKeyCode = "sneak",
                         MouseButton = EnumMouseButton.Right,
                     }

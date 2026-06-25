@@ -1,4 +1,4 @@
-﻿using Vintagestory.API.Client;
+using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Config;
 using Vintagestory.API.Server;
@@ -7,12 +7,12 @@ using ProtoBuf;
 using System;
 using HarmonyLib;
 
-namespace PetAI
+namespace TamedAIPlus
 {
-    public class PetAI : ModSystem
+    public class TamedAIPlus : ModSystem
     {
 
-        readonly Harmony harmony = new("gerste.petai");
+        readonly Harmony harmony = new("foxbravo.tamedaiplus");
         ICoreServerAPI serverAPI;
 
         ICoreClientAPI clientAPI;
@@ -36,7 +36,7 @@ namespace PetAI
             api.RegisterEntityBehaviorClass("pettableextended", typeof(EntityBehaviorPettableExtended));
 
             api.RegisterCollectibleBehaviorClass("considerpetfood", typeof(BehaviorConsiderHumanFoodForPetsToo));
-            api.RegisterCollectibleBehaviorClass("PetAIChewingBoneAimThrow", typeof(BehaviorChewingBoneAimThrow));
+            api.RegisterCollectibleBehaviorClass("TamedAIPlusChewingBoneAimThrow", typeof(BehaviorChewingBoneAimThrow));
 
             api.RegisterBlockEntityClass("PetNest", typeof(BlockEntityPetNest));
             api.RegisterBlockClass("PetNest", typeof(BlockPetNest));
@@ -58,26 +58,26 @@ namespace PetAI
 
             try
             {
-                var Config = api.LoadModConfig<PetConfig>("petconfig.json");
+                var Config = api.LoadModConfig<TamedAIPlusConfig>("tamedaiplus-config.json");
                 if (Config != null)
                 {
                     api.Logger.Notification("Mod Config successfully loaded.");
-                    PetConfig.Current = Config;
+                    TamedAIPlusConfig.Current = Config;
                 }
                 else
                 {
                     api.Logger.Notification("No Mod Config specified. Falling back to default settings");
-                    PetConfig.Current = new();
+                    TamedAIPlusConfig.Current = new();
                 }
             }
             catch
             {
-                PetConfig.Current = new();
+                TamedAIPlusConfig.Current = new();
                 api.Logger.Error("Failed to load custom mod configuration. Falling back to default settings!");
             }
             finally
             {
-                api.StoreModConfig(PetConfig.Current, "petconfig.json");
+                api.StoreModConfig(TamedAIPlusConfig.Current, "tamedaiplus-config.json");
             }
         }
 
@@ -86,7 +86,7 @@ namespace PetAI
             base.StartClientSide(api);
             this.clientAPI = api;
 
-            api.Network.RegisterChannel("petainetwork")
+            api.Network.RegisterChannel("tamedaiplus-network")
                 .RegisterMessageType<PetCommandMessage>()
                 .RegisterMessageType<PetProfileMessage>().SetMessageHandler<PetProfileMessage>(OnPetProfileMessageClient);
         }
@@ -95,7 +95,7 @@ namespace PetAI
         {
             base.StartServerSide(api);
             this.serverAPI = api;
-            api.Network.RegisterChannel("petainetwork")
+            api.Network.RegisterChannel("tamedaiplus-network")
                 .RegisterMessageType<PetCommandMessage>().SetMessageHandler<PetCommandMessage>(OnPetCommandMessage)
                 .RegisterMessageType<PetProfileMessage>().SetMessageHandler<PetProfileMessage>(OnPetProfileMessageServer);
         }
@@ -145,7 +145,7 @@ namespace PetAI
         {
             if (clientAPI != null)
             {
-                if (clientAPI.World.GetEntityById(networkMessage.oldEntityUID) is EntityAgent entity) clientAPI.ShowChatMessage(Lang.Get("petai:message-finished-taming", entity.GetName()));
+                if (clientAPI.World.GetEntityById(networkMessage.oldEntityUID) is EntityAgent entity) clientAPI.ShowChatMessage(Lang.Get("tamedaiplus:message-finished-taming", entity.GetName()));
                 new PetProfileGUI(clientAPI, networkMessage.targetEntityUID).TryOpen();
             }
         }
@@ -167,9 +167,9 @@ namespace PetAI
         public long targetEntityUID;
         public long oldEntityUID;
     }
-    public class PetConfig
+    public class TamedAIPlusConfig
     {
-        public static PetConfig Current;
+        public static TamedAIPlusConfig Current;
         public Difficulty Difficulty = new();
         public bool PvpOn = true;
         public bool PetDamageableByOwner = false;
