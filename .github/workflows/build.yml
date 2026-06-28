@@ -8,7 +8,6 @@ on:
 
 env:
   DOTNET_VERSION: "10.0.x"
-  VS_VERSION: "1.20.7"
 
 jobs:
   build:
@@ -22,19 +21,23 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Resolve game version
+        id: gamever
+        run: echo "vs_version=$(jq -r '.dependencies.game' PetAI/modinfo.json)" >> $GITHUB_OUTPUT
+
       - name: Cache Vintage Story SDK
         id: cache-vs
         uses: actions/cache@v4
         with:
           path: /tmp/vintagestory
-          key: ${{ runner.os }}-vs-${{ env.VS_VERSION }}
+          key: ${{ runner.os }}-vs-${{ steps.gamever.outputs.vs_version }}
 
       - name: Download and extract Vintage Story SDK
         if: steps.cache-vs.outputs.cache-hit != 'true'
         run: |
           mkdir -p /tmp/vintagestory
-          curl -sL "https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-${{ env.VS_VERSION }}.tar.gz" \
-            | tar xz -C /tmp/vintagestory
+          curl -sL "https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${{ steps.gamever.outputs.vs_version }}.tar.gz" \
+            | tar xz -C /tmp/vintagestory VintagestoryAPI.dll Lib/ Mods/
 
       - name: Set VINTAGE_STORY
         run: echo "VINTAGE_STORY=/tmp/vintagestory" >> $GITHUB_ENV

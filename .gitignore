@@ -4,3 +4,5 @@ bin
 petai.sln
 Releases
 /.vs/*
+.idea/
+.serena/
