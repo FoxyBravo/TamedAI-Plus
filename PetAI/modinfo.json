@@ -8,7 +8,7 @@
         "FoxyBravo"
     ],
     "description": "Community fork of PetAI, featuring smarter pet AI, Roam and Guard commands, map tracking for tamed animals, enhanced pet profiles, chewing bone durability, and improved companion behavior.",
-    "version": "5.1.66",
+    "version": "5.2.0",
     "dependencies": {
         "game": "1.22.0"
     }
