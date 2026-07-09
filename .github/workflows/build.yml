@@ -59,4 +59,9 @@ jobs:
         run: |
           zipfile="$(find Releases -name '*.zip' | head -1)"
           version="$(echo "$zipfile" | sed 's/.*_v//;s/\.zip//')"
-          gh release create "v$version" "$zipfile" --generate-notes
+          tag="v$version"
+          gh release delete "$tag" --yes 2>/dev/null || true
+          git push --delete origin "$tag" 2>/dev/null || true
+          gh release create "$tag" "$zipfile" \
+            --title "TamedAI Plus $tag" \
+            --generate-notes
