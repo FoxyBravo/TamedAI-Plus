@@ -3,7 +3,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.Datastructures;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class AiTaskPetMeleeAttack : AiTaskMeleeAttack
     {
@@ -27,7 +27,7 @@ namespace PetAI
         public AiTaskPetMeleeAttack(EntityAgent entity, JsonObject taskConfig, JsonObject aiConfig) : base(entity, taskConfig, aiConfig)
         {
             isCommandable = taskConfig["isCommandable"].AsBool(false);
-            damage *= PetConfig.Current.Difficulty.petDamageMultiplier;
+            damage *= TamedAIPlusConfig.Current.Difficulty.petDamageMultiplier;
         }
 
         public override bool IsTargetableEntity(Entity e, float range)
@@ -45,7 +45,7 @@ namespace PetAI
                 {
                     return false;
                 }
-                if (!PetConfig.Current.PvpOn && tameable?.DomesticationLevel != DomesticationLevel.WILD && player.PlayerUID != tameable?.OwnerId)
+                if (!TamedAIPlusConfig.Current.PvpOn && tameable?.DomesticationLevel != DomesticationLevel.WILD && player.PlayerUID != tameable?.OwnerId)
                 {
                     return false;
                 }

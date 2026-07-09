@@ -12,7 +12,7 @@ using System.Text;
 using System.Linq;
 using Vintagestory.API.Util;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public enum DomesticationLevel
     {
@@ -215,7 +215,7 @@ namespace PetAI
 
         public override void AfterInitialized(bool onFirstSpawn)
         {
-            entity.GetBehavior<EntityBehaviorHealth>()?.SetMaxHealthModifiers("petconfig", PetConfig.Current.Difficulty.petMaxHpModifier);
+            entity.GetBehavior<EntityBehaviorHealth>()?.SetMaxHealthModifiers("TamedAIPlusConfig", TamedAIPlusConfig.Current.Difficulty.petMaxHpModifier);
         }
 
         public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled)
@@ -230,6 +230,13 @@ namespace PetAI
                 TryReviveWith(itemslot);
                 return;
             }
+            if (entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal)
+            {
+                TryHealWoundedWith(itemslot);
+                handled = EnumHandling.Handled;
+                return;
+            }
             if (byEntity.Controls.Sneak) return;
 
             if (DomesticationLevel == DomesticationLevel.WILD
@@ -239,7 +246,7 @@ namespace PetAI
                 {
                     DomesticationLevel = DomesticationLevel.TAMING;
                     OwnerId = player.PlayerUID;
-                    (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-startet-taming", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
+                    (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("tamedaiplus:message-startet-taming", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
                 }
             }
             else if (DomesticationLevel == DomesticationLevel.TAMING
@@ -247,7 +254,14 @@ namespace PetAI
             {
                 if (FeedEntityIfPossible(itemslot, player))
                 {
-                    (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-tended-to", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
+                    if (DomesticationProgress >= 1f)
+                    {
+                        (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("tamedaiplus:message-tamed", entity.GetName()), EnumChatType.Notification);
+                    }
+                    else
+                    {
+                        (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("tamedaiplus:message-tended-to", entity.GetName(), Math.Round(DomesticationProgress * 100, 2)), EnumChatType.Notification);
+                    }
                 }
                 if (DomesticationProgress >= 1f)
                 {
@@ -266,6 +280,7 @@ namespace PetAI
                 Obedience = 1;
                 OwnerId = (byEntity as EntityPlayer)?.PlayerUID;
                 SpawnTameVariant(1f);
+                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("tamedaiplus:message-tamed", entity.GetName()), EnumChatType.Notification);
             }
         }
         public override string PropertyName()
@@ -362,8 +377,8 @@ namespace PetAI
                 }
                 if (acceptedItems < 1) return false;
 
-                if (DomesticationLevel == DomesticationLevel.DOMESTICATED) Obedience += tamingItem.Progress * PetConfig.Current.Difficulty.obedienceMultiplier * (float)Math.Pow(1f + PetConfig.Current.Difficulty.obedienceMultiplierIncreasePerGen, Generation);
-                else DomesticationProgress += tamingItem.Progress * PetConfig.Current.Difficulty.tamingMultiplier * (float)Math.Pow(1f + PetConfig.Current.Difficulty.tamingMultiplierIncreasePerGen, Generation);
+                if (DomesticationLevel == DomesticationLevel.DOMESTICATED) Obedience += tamingItem.Progress * TamedAIPlusConfig.Current.Difficulty.obedienceMultiplier * (float)Math.Pow(1f + TamedAIPlusConfig.Current.Difficulty.obedienceMultiplierIncreasePerGen, Generation);
+                else DomesticationProgress += tamingItem.Progress * TamedAIPlusConfig.Current.Difficulty.tamingMultiplier * (float)Math.Pow(1f + TamedAIPlusConfig.Current.Difficulty.tamingMultiplierIncreasePerGen, Generation);
 
                 Cooldown = entity.World.Calendar.TotalHours + tamingItem.Cooldown;
 
@@ -380,7 +395,18 @@ namespace PetAI
             }
             else
             {
-                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, Lang.Get("petai:message-not-ready", entity.GetName()), EnumChatType.Notification);
+                double remainingHours = Cooldown - entity.World.Calendar.TotalHours;
+                string message;
+                if (remainingHours < 1.0)
+                {
+                    message = Lang.Get("tamedaiplus:message-not-ready-less-than-hour", entity.GetName());
+                }
+                else
+                {
+                    int hours = (int)Math.Round(remainingHours);
+                    message = Lang.Get("tamedaiplus:message-not-ready-hours", entity.GetName(), hours);
+                }
+                (player.Player as IServerPlayer)?.SendMessage(GlobalConstants.GeneralChatGroup, message, EnumChatType.Notification);
             }
             return false;
         }
@@ -405,7 +431,7 @@ namespace PetAI
             // I hope the PlayerEntity is null when the player is offline
             if (CachedOwner?.Entity != null)
             {
-                Obedience -= PetConfig.Current.Difficulty.disobedienceMultiplier * disobediencePerDay * ((float)(hoursPassed / 24)) * (float)Math.Pow(1f - PetConfig.Current.Difficulty.disobedienceMultiplierDecreasePerGen, Generation);
+                Obedience -= TamedAIPlusConfig.Current.Difficulty.disobedienceMultiplier * disobediencePerDay * ((float)(hoursPassed / 24)) * (float)Math.Pow(1f - TamedAIPlusConfig.Current.Difficulty.disobedienceMultiplierDecreasePerGen, Generation);
             }
             DisobedienceTime = entity.World.Calendar.TotalHours;
         }
@@ -416,25 +442,27 @@ namespace PetAI
                 .ConvertAll(treat => (CollectibleObject)world.GetItem(treat) ?? world.GetBlock(treat))
                 .FindAll(treat => treat != null)
                 .ConvertAll(treat => new ItemStack(treat))];
-            if (entity.Alive && treats.Length > 0 && (string.IsNullOrEmpty(OwnerId) || player.PlayerUID == OwnerId))
+            bool isDowned = entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal;
+            if (entity.Alive && !isDowned && treats.Length > 0 && (string.IsNullOrEmpty(OwnerId) || player.PlayerUID == OwnerId) && Cooldown <= entity.World.Calendar.TotalHours)
             {
                 return [
                     new WorldInteraction()
                     {
-                        ActionLangCode = "petai:interact-feed",
+                        ActionLangCode = "tamedaiplus:interact-feed",
                         MouseButton = EnumMouseButton.Right,
                         Itemstacks = treats
                     }
                 ];
             }
-            else if (!entity.Alive && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true && PetConfig.Current.Resurrectors?.Length > 0)
+            else if (!entity.Alive && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true && TamedAIPlusConfig.Current.Resurrectors?.Length > 0)
             {
                 return [
                     new WorldInteraction()
                     {
-                        ActionLangCode = "petai:interact-revive",
+                        ActionLangCode = "tamedaiplus:interact-revive",
                         MouseButton = EnumMouseButton.Right,
-                        Itemstacks = [.. PetConfig.Current.Resurrectors.ToList()
+                        Itemstacks = [.. TamedAIPlusConfig.Current.Resurrectors.ToList()
                             .ConvertAll(resurrector => new AssetLocation(resurrector))
                             .ConvertAll(resurrector => (CollectibleObject)world.GetItem(resurrector) ?? world.GetBlock(resurrector))
                             .FindAll(resurrector => resurrector != null)
@@ -451,15 +479,21 @@ namespace PetAI
         public override void OnEntityReceiveDamage(DamageSource damageSource, ref float damage)
         {
             var aggressor = damageSource.CauseEntity ?? damageSource.SourceEntity;
-            if (aggressor is EntityPlayer player
-                && (player.PlayerUID == OwnerId && !PetConfig.Current.PetDamageableByOwner
-                    || player.PlayerUID != OwnerId && !PetConfig.Current.PvpOn && DomesticationLevel != DomesticationLevel.WILD)
-                || damageSource.Source == EnumDamageSource.Fall
-                && PetConfig.Current.FalldamageOff)
+            if (damage > 0
+                && (aggressor is EntityPlayer player
+                    && (player.PlayerUID == OwnerId && !TamedAIPlusConfig.Current.PetDamageableByOwner
+                        || player.PlayerUID != OwnerId && !TamedAIPlusConfig.Current.PvpOn && DomesticationLevel != DomesticationLevel.WILD)
+                    || damageSource.Source == EnumDamageSource.Fall
+                    && TamedAIPlusConfig.Current.FalldamageOff))
             {
                 damage = 0;
                 damageSource.CauseEntity = null;
                 damageSource.SourceEntity = null;
+            }
+            if (aggressor != null && aggressor.EntityId != entity.EntityId)
+            {
+                entity.WatchedAttributes.SetInt("tamedaiplus:lastDamagerId", (int)aggressor.EntityId);
+                entity.WatchedAttributes.SetInt("tamedaiplus:lastDamageMs", (int)(entity.World.ElapsedMilliseconds % int.MaxValue));
             }
             var behaviorHealth = entity.GetBehavior<EntityBehaviorHealth>();
             if (behaviorHealth?.Health < 0)
@@ -475,7 +509,7 @@ namespace PetAI
             {
                 sapi.SendMessage(CachedOwner,
                 GlobalConstants.GeneralChatGroup,
-                Lang.Get("petai:message-pet-dead",
+                Lang.Get("tamedaiplus:message-animal-dead",
                 entity.GetBehavior<EntityBehaviorNameTag>()?.DisplayName),
                 EnumChatType.Notification);
 
@@ -488,7 +522,7 @@ namespace PetAI
                         Pinned = true,
                         Position = entity.Pos.XYZ,
                         OwningPlayerUid = OwnerId,
-                        Title = Lang.Get("petai:message-pet-dead", entity.GetBehavior<EntityBehaviorNameTag>()?.DisplayName),
+                        Title = Lang.Get("tamedaiplus:message-animal-dead", entity.GetBehavior<EntityBehaviorNameTag>()?.DisplayName),
                     },
                         CachedOwner as IServerPlayer);
                 }
@@ -500,22 +534,42 @@ namespace PetAI
             if (CachedOwner == null) return;
 
             infotext
-                .AppendLine(Lang.Get("petai:gui-pet-owner", CachedOwner?.PlayerName))
-                .AppendLine(DomesticationLevel == DomesticationLevel.DOMESTICATED ? Lang.Get("petai:gui-pet-obedience", Math.Round(Obedience * 100, 2)) : Lang.Get("petai:gui-pet-domesticationProgress", Math.Round(DomesticationProgress * 100, 2)))
-                .AppendLine(Lang.Get("petai:gui-pet-nestsize", Lang.Get("petai:gui-pet-nestsize-" + Size.ToString().ToLower())));
+                .AppendLine(Lang.Get("tamedaiplus:gui-animal-owner", CachedOwner?.PlayerName))
+                .AppendLine(DomesticationLevel == DomesticationLevel.DOMESTICATED ? Lang.Get("tamedaiplus:gui-animal-obedience", Math.Round(Obedience * 100, 2)) : Lang.Get("tamedaiplus:gui-animal-domesticationProgress", Math.Round(DomesticationProgress * 100, 2)));
             if (entity.HasBehavior<EntityBehaviorHealth>())
             {
                 var beh = entity.GetBehavior<EntityBehaviorHealth>();
-                infotext.AppendLine(Lang.Get("Health: {0}/{1}", beh.Health, beh.MaxHealth));
+                infotext.AppendLine(Lang.Get("Health: {0}/{1}", Math.Round(beh.Health, 2), Math.Round(beh.MaxHealth, 2)));
             }
+
         }
 
         private void TryReviveWith(ItemSlot itemslot)
         {
-            var isResurrector = PetConfig.Current.Resurrectors.Any(resurrector => resurrector.Split(":").Last() == itemslot?.Itemstack?.Collectible?.Code?.Path);
+            var isResurrector = TamedAIPlusConfig.Current.Resurrectors.Any(resurrector => resurrector.Split(":").Last() == itemslot?.Itemstack?.Collectible?.Code?.Path);
             if (isResurrector && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true)
             {
                 entity.Revive();
+                if (entity.HasBehavior<EntityBehaviorMortallyWoundable>())
+                {
+                    entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState = EnumEntityHealthState.Normal;
+                }
+                entity.AnimManager?.ActiveAnimationsByAnimCode.Keys.Foreach(entity.AnimManager.StopAnimation);
+                itemslot.TakeOut(1);
+                itemslot.MarkDirty();
+            }
+        }
+
+        private void TryHealWoundedWith(ItemSlot itemslot)
+        {
+            var isWoundHealer = TamedAIPlusConfig.Current.WoundHealers.Any(healer => healer.Split(":").Last() == itemslot?.Itemstack?.Collectible?.Code?.Path);
+            if (isWoundHealer && entity.GetBehavior<EntityBehaviorHarvestable>()?.IsHarvested != true)
+            {
+                if (entity.HasBehavior<EntityBehaviorHealth>())
+                {
+                    var health = entity.GetBehavior<EntityBehaviorHealth>();
+                    health.Health = Math.Min(health.Health + health.MaxHealth * 0.4f, health.MaxHealth);
+                }
                 if (entity.HasBehavior<EntityBehaviorMortallyWoundable>())
                 {
                     entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState = EnumEntityHealthState.Normal;

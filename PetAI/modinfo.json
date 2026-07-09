@@ -1,13 +1,14 @@
 {
     "type": "code",
-    "modid": "petai",
-    "name": "Pet AI",
+    "modid": "tamedaiplus",
+    "name": "TamedAI Plus",
     "side": "universal",
     "authors": [
-        "G3rste"
+        "G3rste",
+        "FoxyBravo"
     ],
-    "description": "Mod that focuses on implementing various new AI behaviours and tasks centered around taming.",
-    "version": "5.1.1",
+    "description": "Community fork of PetAI, featuring smarter pet AI, Roam and Guard commands, map tracking for tamed animals, enhanced pet profiles, chewing bone durability, and improved companion behavior.",
+    "version": "5.2.0",
     "dependencies": {
         "game": "1.22.0"
     }

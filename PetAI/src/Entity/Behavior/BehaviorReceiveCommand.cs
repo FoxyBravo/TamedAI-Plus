@@ -4,9 +4,11 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Client;
+using Vintagestory.API.Config;
+using Vintagestory.GameContent;
 using System.Collections.Generic;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class EntityBehaviorReceiveCommand : EntityBehavior
     {
@@ -76,6 +78,10 @@ namespace PetAI
 
                 AvailableCommands.Add(new Command(type, commandName), minObedience);
             }
+            if (!AvailableCommands.ContainsKey(new Command(EnumCommandType.COMPLEX, "roam")))
+                AvailableCommands.Add(new Command(EnumCommandType.COMPLEX, "roam"), 0f);
+            if (!AvailableCommands.ContainsKey(new Command(EnumCommandType.COMPLEX, "guard")))
+                AvailableCommands.Add(new Command(EnumCommandType.COMPLEX, "guard"), 0.2f);
         }
 
         public override void OnInteract(EntityAgent byEntity, ItemSlot itemslot, Vec3d hitPosition, EnumInteractMode mode, ref EnumHandling handled)
@@ -87,12 +93,21 @@ namespace PetAI
                 && byEntity.Controls.Sneak
                 && mode == EnumInteractMode.Interact)
             {
-                if (entity.Api.Side == EnumAppSide.Client)
-                {
-                    if (gui == null) { gui = new TaskSelectionGui(entity.Api as ICoreClientAPI, player, entity as EntityAgent); }
-                    else { gui.ComposeGui(); }
-                    gui.TryOpen();
-                }
+            bool isDowned = entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal;
+            if (isDowned)
+            {
+                if (entity.Api is ICoreClientAPI capi)
+                    capi.ShowChatMessage(Lang.Get("tamedaiplus:gui-animal-downed"));
+                return;
+            }
+            handled = EnumHandling.PreventSubsequent;
+            if (entity.Api.Side == EnumAppSide.Client)
+            {
+                if (gui == null) { gui = new TaskSelectionGui(entity.Api as ICoreClientAPI, player, entity as EntityAgent); }
+                else { gui.ComposeGui(); }
+                gui.TryOpen();
+            }
             }
         }
         public void SetCommand(Command command, EntityPlayer byPlayer)
@@ -104,6 +119,14 @@ namespace PetAI
             {
                 if (command.Type == EnumCommandType.COMPLEX)
                 {
+                    if (command.CommandName == "roam")
+                    {
+                        ComplexCommand = null;
+                        entity.WatchedAttributes.RemoveAttribute("staylocation");
+                        entity.WatchedAttributes.RemoveAttribute("guardlocation");
+                        return;
+                    }
+
                     ComplexCommand = command.CommandName;
 
                     ITreeAttribute location = new TreeAttribute();
@@ -111,7 +134,7 @@ namespace PetAI
                     location.SetDouble("y", entity.Pos.Y);
                     location.SetDouble("z", entity.Pos.Z);
 
-                    entity.WatchedAttributes.SetAttribute("staylocation", location);
+                    entity.WatchedAttributes.SetAttribute(command.CommandName + "location", location);
                 }
                 if (command.Type == EnumCommandType.SIMPLE)
                 {
@@ -143,13 +166,15 @@ namespace PetAI
         }
         public override WorldInteraction[] GetInteractionHelp(IClientWorldAccessor world, EntitySelection es, IClientPlayer player, ref EnumHandling handled)
         {
-            if (entity.Alive && entity.GetBehavior<EntityBehaviorTameable>()?.OwnerId == player.PlayerUID)
+            bool isDowned = entity.HasBehavior<EntityBehaviorMortallyWoundable>()
+                && entity.GetBehavior<EntityBehaviorMortallyWoundable>().HealthState != EnumEntityHealthState.Normal;
+            if (entity.Alive && !isDowned && entity.GetBehavior<EntityBehaviorTameable>()?.OwnerId == player.PlayerUID)
             {
                 return
                 [
                     new WorldInteraction()
                     {
-                        ActionLangCode = "petai:interact-command",
+                        ActionLangCode = "tamedaiplus:interact-command",
                         HotKeyCode = "sneak",
                         MouseButton = EnumMouseButton.Right,
                     }

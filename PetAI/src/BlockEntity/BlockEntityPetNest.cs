@@ -3,7 +3,7 @@ using Vintagestory.GameContent;
 using Vintagestory.API.MathTools;
 using Vintagestory.API.Server;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class BlockEntityPetNest : BlockEntity, IPointOfInterest
     {

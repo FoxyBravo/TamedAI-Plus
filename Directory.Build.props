@@ -1,0 +1,5 @@
+<Project>
+  <PropertyGroup>
+    <VINTAGE_STORY Condition="'$(VINTAGE_STORY)' == ''">F:\Install\games\Vintagestory</VINTAGE_STORY>
+  </PropertyGroup>
+</Project>

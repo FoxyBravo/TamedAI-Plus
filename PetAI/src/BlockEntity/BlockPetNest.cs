@@ -1,7 +1,7 @@
 using System;
 using Vintagestory.API.Common;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class BlockPetNest : Block
     {

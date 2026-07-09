@@ -4,7 +4,7 @@ using Vintagestory.API.Common.Entities;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class ItemPetWhistle : Item
     {
@@ -25,7 +25,7 @@ namespace PetAI
                 byEntity.AnimManager?.StartAnimation("eat");
                 if (byEntity.Api?.Side == EnumAppSide.Server)
                 {
-                    byEntity.World?.PlaySoundAt(new AssetLocation("petai:sounds/whistling.ogg"), byEntity.Pos.X, byEntity.Pos.Y, byEntity.Pos.Z);
+                    byEntity.World?.PlaySoundAt(new AssetLocation("tamedaiplus:sounds/whistling.ogg"), byEntity.Pos.X, byEntity.Pos.Y, byEntity.Pos.Z);
                 }
                 NotifyNearbyPets(byEntity);
             }
@@ -112,13 +112,13 @@ namespace PetAI
             [
                 new WorldInteraction()
                 {
-                    ActionLangCode = "petai:interact-whistle-select",
+                    ActionLangCode = "tamedaiplus:interact-whistle-select",
                     HotKeyCode = "sneak",
                     MouseButton = EnumMouseButton.Right,
                 },
                 new WorldInteraction()
                 {
-                    ActionLangCode = "petai:interact-whistle-command",
+                    ActionLangCode = "tamedaiplus:interact-whistle-command",
                     MouseButton = EnumMouseButton.Right,
                 }
             ];

@@ -1,0 +1,67 @@
+name: Build & Release
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_VERSION: "10.0.x"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Resolve game version
+        id: gamever
+        run: echo "vs_version=$(jq -r '.dependencies.game' PetAI/modinfo.json)" >> $GITHUB_OUTPUT
+
+      - name: Cache Vintage Story SDK
+        id: cache-vs
+        uses: actions/cache@v4
+        with:
+          path: /tmp/vintagestory
+          key: ${{ runner.os }}-vs-${{ steps.gamever.outputs.vs_version }}
+
+      - name: Download and extract Vintage Story SDK
+        if: steps.cache-vs.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p /tmp/vintagestory
+          curl -sL "https://cdn.vintagestory.at/gamefiles/stable/vs_server_linux-x64_${{ steps.gamever.outputs.vs_version }}.tar.gz" \
+            | tar xz -C /tmp/vintagestory VintagestoryAPI.dll Lib/ Mods/
+
+      - name: Set VINTAGE_STORY
+        run: echo "VINTAGE_STORY=/tmp/vintagestory" >> $GITHUB_ENV
+
+      - name: Build & Package
+        run: dotnet run --project CakeBuild/CakeBuild.csproj -- --skipDownloadLang true
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tamedaiplus-package
+          path: Releases/*.zip
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/main'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          zipfile="$(find Releases -name '*.zip' | head -1)"
+          version="$(echo "$zipfile" | sed 's/.*_v//;s/\.zip//')"
+          tag="v$version"
+          gh release delete "$tag" --yes 2>/dev/null || true
+          git push --delete origin "$tag" 2>/dev/null || true
+          gh release create "$tag" "$zipfile" \
+            --title "TamedAI Plus $tag" \
+            --generate-notes

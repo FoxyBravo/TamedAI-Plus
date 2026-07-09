@@ -1,0 +1,19 @@
+[
+    {
+        "side": "server",
+        "op": "add",
+        "path": "/server/behaviors/16/aitasks/-",
+        "value": {
+            "code": "guard",
+            "priority": 2,
+            "priorityForCancel": 1.9,
+            "command": "guard",
+            "movespeed": 0.005,
+            "maxdistance": 50,
+            "searchRange": 40,
+            "animation": "Walk",
+            "animationSpeed": 1.25
+        },
+        "file": "wolftaming:entities/land/dog-adult.json"
+    }
+]

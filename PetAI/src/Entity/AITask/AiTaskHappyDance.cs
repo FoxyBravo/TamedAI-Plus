@@ -3,7 +3,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 
-namespace PetAI
+namespace TamedAIPlus
 {
 
     public class AiTaskHappyDance : AiTaskBase

@@ -4,7 +4,7 @@ using Vintagestory.API.Common;
 using Vintagestory.API.Common.Entities;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class MultiplyPatch
     {
@@ -18,7 +18,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -52,7 +52,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Prefix, "gerste.petai");
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -89,7 +89,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -117,7 +117,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -136,6 +136,30 @@ namespace PetAI
         }
     }
 
+    public class EntityBehaviorHealthGetInfoTextPatch
+    {
+        public static void Patch(Harmony harmony)
+        {
+            harmony.Patch(MethodInfo()
+                , prefix: new HarmonyMethod(typeof(EntityBehaviorHealthGetInfoTextPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+        }
+
+        public static void Unpatch(Harmony harmony)
+        {
+            harmony.Unpatch(MethodInfo()
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
+        }
+
+        public static MethodInfo MethodInfo()
+        {
+            return typeof(EntityBehaviorHealth).GetMethod("GetInfoText", BindingFlags.Instance | BindingFlags.Public);
+        }
+        public static bool Prefix(EntityBehaviorHealth __instance)
+        {
+            return !__instance.entity.HasBehavior<EntityBehaviorTameable>();
+        }
+    }
+
     public class AiTaskStayCloseToEntityOnNoPathPatch
     {
 
@@ -148,7 +172,7 @@ namespace PetAI
         public static void Unpatch(Harmony harmony)
         {
             harmony.Unpatch(MethodInfo()
-                , HarmonyPatchType.Postfix, "gerste.petai");
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
         }
 
         public static MethodInfo MethodInfo()
@@ -158,6 +182,94 @@ namespace PetAI
         public static void Postfix(AiTaskStayCloseToEntity __instance)
         {
             __instance.OnNoPath(null);
+        }
+    }
+
+    public class AiTaskMeleeAttackIsTargetableEntityPatch
+    {
+        public static void Patch(Harmony harmony)
+        {
+            harmony.Patch(MethodInfo()
+                , prefix: new HarmonyMethod(typeof(AiTaskMeleeAttackIsTargetableEntityPatch).GetMethod("Prefix", BindingFlags.Static | BindingFlags.Public)));
+            harmony.Patch(typeof(AiTaskBase).GetMethod("ContinueExecute", BindingFlags.Instance | BindingFlags.Public)
+                , postfix: new HarmonyMethod(typeof(AiTaskMeleeAttackIsTargetableEntityPatch).GetMethod("ContinueExecutePostfix", BindingFlags.Static | BindingFlags.Public)));
+        }
+
+        public static void Unpatch(Harmony harmony)
+        {
+            harmony.Unpatch(MethodInfo()
+                , HarmonyPatchType.Prefix, "foxbravo.tamedaiplus");
+            harmony.Unpatch(typeof(AiTaskBase).GetMethod("ContinueExecute", BindingFlags.Instance | BindingFlags.Public)
+                , HarmonyPatchType.Postfix, "foxbravo.tamedaiplus");
+        }
+
+        public static MethodInfo MethodInfo()
+        {
+            return typeof(AiTaskBaseTargetable).GetMethod("IsTargetableEntity", BindingFlags.Instance | BindingFlags.Public);
+        }
+        public static bool Prefix(AiTaskBaseTargetable __instance, Entity e, ref bool __result)
+        {
+            if (e == null) return true;
+            var mortallyWoundable = e.GetBehavior<EntityBehaviorMortallyWoundable>();
+            var tameable = e.GetBehavior<EntityBehaviorTameable>();
+            if (mortallyWoundable != null
+                && tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && mortallyWoundable.HealthState != EnumEntityHealthState.Normal)
+            {
+                __result = false;
+                return false;
+            }
+            if (tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && IsDogOrWolf(e))
+            {
+                var attacker = __instance.entity;
+                if (IsWildWolf(attacker)
+                    && attacker.World.Rand.NextDouble() < 0.5)
+                {
+                    __result = false;
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool IsDogOrWolf(Entity e)
+        {
+            if (e?.Code == null) return false;
+            string path = e.Code.Path;
+            return path.StartsWith("dog-") || path.StartsWith("wolf-");
+        }
+
+        private static bool IsWildWolf(Entity e)
+        {
+            if (e?.Code == null) return false;
+            string path = e.Code.Path;
+            if (path != "wolf-male" && path != "wolf-female") return false;
+            var tameable = e.GetBehavior<EntityBehaviorTameable>();
+            return tameable == null || string.IsNullOrEmpty(tameable.OwnerId);
+        }
+
+        public static void ContinueExecutePostfix(AiTaskBase __instance, float dt)
+        {
+            if (!(__instance is AiTaskBaseTargetable targetable)) return;
+            var targetField = typeof(AiTaskBaseTargetable).GetField("targetEntity", BindingFlags.Instance | BindingFlags.NonPublic);
+            if (targetField == null) return;
+            var target = targetField.GetValue(targetable) as Entity;
+            if (target == null) return;
+            var mortallyWoundable = target.GetBehavior<EntityBehaviorMortallyWoundable>();
+            var tameable = target.GetBehavior<EntityBehaviorTameable>();
+            if (mortallyWoundable != null
+                && tameable != null
+                && !string.IsNullOrEmpty(tameable.OwnerId)
+                && tameable.DomesticationLevel == DomesticationLevel.DOMESTICATED
+                && mortallyWoundable.HealthState != EnumEntityHealthState.Normal)
+            {
+                targetField.SetValue(targetable, null);
+            }
         }
     }
 }

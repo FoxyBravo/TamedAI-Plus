@@ -2,7 +2,7 @@ using Vintagestory.API.Client;
 using Vintagestory.API.Common;
 using Vintagestory.API.Datastructures;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class ItemPetCarrier : Item
     {
@@ -50,7 +50,7 @@ namespace PetAI
             return [
                     new WorldInteraction()
                     {
-                        ActionLangCode = "petai:pickup-pet",
+                        ActionLangCode = "tamedaiplus:pickup-pet",
                         HotKeyCode = "sneak",
                         MouseButton = EnumMouseButton.Right
                     }

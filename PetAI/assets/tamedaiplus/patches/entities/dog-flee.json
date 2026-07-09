@@ -1,0 +1,32 @@
+[
+    {
+        "side": "server",
+        "op": "add",
+        "path": "/server/behaviors/16/aitasks/-",
+        "value": {
+            "code": "petflee",
+            "priority": 4,
+            "movespeed": 0.05,
+            "animation": "Run",
+            "animationSpeed": 2.5,
+            "fleerange": 25,
+            "fleeseconds": 4
+        },
+        "file": "wolftaming:entities/land/dog-adult.json"
+    },
+    {
+        "side": "server",
+        "op": "add",
+        "path": "/server/behaviors/13/aitasks/-",
+        "value": {
+            "code": "petflee",
+            "priority": 4,
+            "movespeed": 0.05,
+            "animation": "Run",
+            "animationSpeed": 2.5,
+            "fleerange": 25,
+            "fleeseconds": 4
+        },
+        "file": "wolftaming:entities/land/dog-pup.json"
+    }
+]

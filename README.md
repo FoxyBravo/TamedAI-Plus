@@ -1,46 +1,47 @@
-# Pet AI
-This Vintage Story mod is serving as a library for my other animal taming mods. 
+# TamedAI Plus
 
-<br>
+TamedAI Plus is a community fork of PetAI, originally created by G3rste. It builds upon the excellent foundation of the original mod while expanding pet behavior, improving companion quality of life, and introducing new gameplay features.
 
-## API Information
+A huge thank you to G3rste for creating and maintaining PetAI, which serves as the backbone for many of Vintage Story's pet and taming mods.
 
-If you want use this to create your own pets, be sure to check out [wolftaming](https://github.com/G3rste/wolftaming) and [cats](https://github.com/G3rste/cats). 
+## What's New
 
-<br>
+### New Complex Commands
 
-### Behaviors and AITasks
+* **Roam** — Animals can roam freely without restrictions.
+* **Guard** — Animals can patrol around a chosen area. Combined with **Aggressive** behavior mode, they will defend your homestead against nearby threats.
 
-Here is a short overview over the most important new entity behaviors and tasks:
+### Smarter Followers
 
-* **behaviors**:
-  * **tameable**: indicates that an entity is tameable, contains the following attributes
-    * **size**: the size of the pet used to determine the size of their petcushion, valid values are small | medium | large
-    * **disobediencePerDay**: Indicates in percent how much disobedience (likelyhood your pet wont follow orders) the pet gains per day if not getting care
-    * **treat**: list of treats you can feed your pet with to tame it/ increase its obedience, eacht treat contains the following attributes
-      * **code**: code of the item 
-      * **domain**: mod domain of the item
-      * **progress**: how many percent of taming progress/ obedience does the pet gain when receiving this treat
-      * **cooldown**: cooldown in in-game hours for how long your pet will need to accept food again
-  * **receivecommand**: indicates that the pet can be trained to execute certain commands
-    * **availablecommands**": there are a couple commands of various complexity available for your pet, here is an examplelist: ```{ "commandName":"sit", "commandType":"SIMPLE", "minObedience":0.2 }, { "commandName":"lay", "commandType":"SIMPLE", "minObedience":0.2 }, { "commandName":"speak", "commandType":"SIMPLE", "minObedience":0.2 }, { "commandName":"followmaster", "commandType":"COMPLEX", "minObedience":0.6 }, { "commandName":"stay", "commandType":"COMPLEX", "minObedience":0.1 }, { "commandName":"NEUTRAL", "commandType":"AGGRESSIONLEVEL", "minObedience":0 }, { "commandName":"PROTECTIVE", "commandType":"AGGRESSIONLEVEL", "minObedience":0.5 }, { "commandName":"AGGRESSIVE", "commandType":"AGGRESSIONLEVEL", "minObedience":0.7 }, { "commandName":"PASSIVE", "commandType":"AGGRESSIONLEVEL", "minObedience":0.8 }```
-  * **raisable**: now obsolete, use vanilla grow instead
-* **aitasks**:
-  * **petmeleeattack**: basically the same as the vanilla meleeattack, but necessary if your pet should fight alongside you
-    * **isCommandable**: if set to true, your pet can aid you an combat and react to your commands
-  * **petseekentity**: basically the same as the vanilla meleeattack, but necessary if your pet should fight alongside you
-    * **isCommandable**: if set to true, your pet can aid you an combat and react to your commands
-  * **simplecommand**: lets your pet play an animation on command, useful for implementing things like sit, speak, flip, has the same attributes as the vanilla idle task
-  * **followmaster**: necessary for your pet to be able to execute the follow command, has the same attributes as the vanilla staycloseto task
-  * **stay**: necessary for your pet to be able to execute the stay command, has the same attributes as the vanilla staycloseto task
-  * **seeknest**: lets your pet seek its cushion at certain times of day, contains attibutes of vanilla idle task
+* Tamed animals are much better at navigating around obstacles and recovering when they get stuck.
 
-<br>
+### Realistic Chewing Bone
 
-### Pet Accessories
+* The chewing bone now has durability and will eventually wear out with repeated use.
 
-Your pets can also wear accessories, armor and backpacks (see [dog collar](https://github.com/G3rste/wolftaming/blob/main/resources/assets/wolftaming/itemtypes/dogcollar.json)). Since 1.20 this uses the vanilla mechanics to implement this (see the tamed elk for more reference).
+### Pet Tracker
 
-If the item should also work as armor, you cann add the damageReduction attribute (lets you set the damageReduction in percent, see [dog armor](https://github.com/G3rste/wolftaming/blob/main/resources/assets/wolftaming/itemtypes/dogarmor.json)).
+* Never lose a companion again.
+* All tamed animals, including animals currently being tamed, are displayed on the map.
+
+### Improved Pet Profiles
+
+Pet profiles now display:
+
+* Species
+* Gender
+* Generation
+
+### Better Companion Experience
+
+* Wild wolves are less likely to attack tamed dogs (50% chance to ignore them).
+* Mortally wounded animals are no longer targeted by hostile creatures.
+
+## Disclaimer
+
+* AI was used to assist in the development and improvement of this mod.
+* Translations other than English have not been verified.
+* This mod has not yet been tested with all animal mods created by G3rste.
+* Development and testing have primarily focused on WolfTaming, for which a TamedAI Plus-compatible edition is also being developed.
 
 ![Thumbnail](petai.png)

@@ -3,7 +3,7 @@ using Vintagestory.API.Datastructures;
 using Vintagestory.API.MathTools;
 using Vintagestory.GameContent;
 
-namespace PetAI
+namespace TamedAIPlus
 {
     public class AiTaskFollowMaster : AiTaskStayCloseToEntity
     {
@@ -15,9 +15,9 @@ namespace PetAI
             {
                 commandName = taskConfig["command"].AsString("followmaster");
             }
-            allowTeleport &= PetConfig.Current.AllowTeleport;
-            moveSpeed *= PetConfig.Current.Difficulty.petSpeedMultiplier;
-            animMeta.AnimationSpeed *= PetConfig.Current.Difficulty.petSpeedMultiplier;
+            allowTeleport &= TamedAIPlusConfig.Current.AllowTeleport;
+            moveSpeed *= TamedAIPlusConfig.Current.Difficulty.petSpeedMultiplier;
+            animMeta.AnimationSpeed *= TamedAIPlusConfig.Current.Difficulty.petSpeedMultiplier;
         }
 
         public override bool ShouldExecute()
